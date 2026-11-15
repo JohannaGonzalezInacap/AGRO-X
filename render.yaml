@@ -1,0 +1,40 @@
+# Infraestructura de AGRO-X en Render (ADR-015, reemplaza a ADR-004/Google Cloud).
+# Los secretos (JWT_SECRET, PAYMENT_WEBHOOK_SECRET) los genera Render al crear el servicio:
+# nunca quedan en este archivo ni en el repositorio.
+
+databases:
+  - name: agro-x-db
+    region: oregon
+    plan: free
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: agro-x-api
+    runtime: docker
+    repo: https://github.com/JohannaGonzalezInacap/AGRO-X
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agro-x-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PAYMENT_WEBHOOK_SECRET
+        generateValue: true
+      - key: PAYMENT_PROVIDER
+        value: fake
+      - key: CORS_ORIGINS
+        value: https://agro-x-api.onrender.com
+      - key: ALLOWED_HOSTS
+        value: agro-x-api.onrender.com
+      - key: PUBLIC_BASE_URL
+        value: https://agro-x-api.onrender.com

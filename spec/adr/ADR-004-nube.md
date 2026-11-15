@@ -1,7 +1,12 @@
 # ADR-004 — Nube y despliegue
 
-- Estado: Propuesta
+- Estado: Reemplazada por ADR-015
 - Fecha: 2026-11-14
+
+**2026-11-15:** al llegar a la Fase 10, el proyecto de GCP no tenía facturación activa (ninguna
+cuenta de facturación de Joha estaba abierta) y no había tiempo para resolverlo antes de la
+entrega. Se desplegó en Render en su lugar — ver ADR-015. Esta decisión queda registrada tal como
+se propuso, por trazabilidad, pero ya no es la que se sigue.
 
 ## Contexto
 Se necesita desplegar barato, rápido y con seguridad razonable. Las tres nubes grandes tienen

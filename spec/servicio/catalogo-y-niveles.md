@@ -8,10 +8,10 @@ Estado: Propuesta. Las metas son Ilustrativas y valen para la etapa de demo.
 |---|---|---|
 | Recomendación de rotación | Productor | Todos |
 | Alertas de riesgo climático | Productor | Todos, con distinta frecuencia y detalle |
-| Ideas de promoción | Productor | Pro |
-| Listado de comerciantes | Productor | Pro |
-| Publicación de mermas | Productor | Pro |
-| Perfil y búsqueda de mermas | Comerciante | Por definir |
+| Ideas de venta urgente (ADR-013) | Productor | Básico y pro |
+| Listado de comerciantes — **en pausa** (ND-002) | Productor | Pro |
+| Publicación de mermas — **en pausa** (ND-002) | Productor | Pro |
+| Perfil y búsqueda de mermas — **en pausa** (ND-002) | Comerciante | Pro |
 
 ## Niveles de servicio
 

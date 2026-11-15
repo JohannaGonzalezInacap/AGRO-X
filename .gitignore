@@ -27,3 +27,6 @@ Thumbs.db
 
 # Configuración local de Claude Code
 .claude/settings.local.json
+
+# Pedido explícitamente local (Joha, 2026-11-15): no subir todavía a GitHub.
+GUIA-PARA-DISENO-FRONTEND.md

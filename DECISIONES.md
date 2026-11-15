@@ -8,3 +8,4 @@ decisiones estructurales van como ADR en `spec/adr/`. Los IDs no se reutilizan n
 | ND-001 | El comerciante también paga plan si quiere funciones pro (ver contacto en una merma) | `spec/alcance-y-planes.md` |
 | ND-002 | El marketplace de comerciantes y mermas (Fase 8) queda en pausa: construido y funcionando, pero no se invierte más ahí hasta decidir si es provechoso | `spec/alcance-y-planes.md` |
 | ND-003 | `PUT/GET /privacy/consents` solo cubre "comunicaciones promocionales"; los otros dos consentimientos de la tabla original ya los gobierna el propio marketplace (perfil, `contact_visible`) | `spec/privacidad/derechos-y-consentimiento.md` |
+| — | Despliegue en Render en vez de Google Cloud, por facturación de GCP inactiva — es ADR-015 (reemplaza a ADR-004), no una ND: afecta a varios documentos y hay alternativas reales descartadas | `spec/adr/ADR-015-despliegue-en-render.md` |

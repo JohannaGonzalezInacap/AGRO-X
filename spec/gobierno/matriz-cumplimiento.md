@@ -23,7 +23,7 @@ del área legal.
 | ITIL | Cambios controlados | Flujo de cambios | `servicio/gestion-cambios.md` | Inicial |
 | ITIL | Incidentes y problemas | Procedimiento | `servicio/gestion-incidentes.md` | Inicial |
 | ITIL | Niveles de servicio | Catálogo por plan | `servicio/catalogo-y-niveles.md` | Inicial |
-| ITIL | Continuidad | Respaldo probado | `servicio/continuidad-respaldo.md` | Pendiente (Fase 10) |
+| ITIL | Continuidad | Respaldo probado | `servicio/continuidad-respaldo.md` | Inicial, con límite conocido: el plan gratis de la base de datos no tiene respaldo automático (ADR-015) |
 | Datos NASA | Citar la fuente y respetar condiciones de uso | Cita en respuestas y documentación | `contratos/fuentes-datos.md` | Pendiente (Fase 4) |
 
 "Inicial" significa que el documento existe con un primer contenido, pero aún no hay código ni

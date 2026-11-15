@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.core.config import get_settings
-from app.core.db import Base
+from app.core.db import Base, normalize_database_url
 from app.modules.alerts import models as alerts_models  # noqa: F401  (registra sus tablas)
 from app.modules.auth import models as auth_models  # noqa: F401  (registra sus tablas en Base)
 from app.modules.billing import models as billing_models  # noqa: F401  (registra sus tablas)
@@ -19,7 +19,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # La URL viene de DATABASE_URL (ver app.core.config), nunca de alembic.ini.
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+config.set_main_option("sqlalchemy.url", normalize_database_url(get_settings().database_url))
 
 target_metadata = Base.metadata
 
