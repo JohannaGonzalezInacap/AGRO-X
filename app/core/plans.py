@@ -40,6 +40,10 @@ PLANS_WITH_MARKETPLACE_ACCESS = {PRO}
 # merma, aunque el productor la haya publicado con el contacto visible.
 PLANS_WITH_MERCHANT_CONTACT_VISIBILITY = {PRO}
 
+# Ideas de venta urgente (ADR-013): mismo umbral que ver el detalle de una alerta, porque esta
+# función necesita leer ese detalle (tipo de alerta, cultivo vigente).
+PLANS_WITH_PROMOTION_IDEAS = {BASIC, PRO}
+
 
 def effective_plan(user: User) -> str:
     """Un plan vencido se comporta como free, sin borrar nada (dominio.md regla 3)."""
@@ -78,3 +82,7 @@ def marketplace_access_allowed(user: User) -> bool:
 
 def merchant_contact_visibility_allowed(user: User) -> bool:
     return effective_plan(user) in PLANS_WITH_MERCHANT_CONTACT_VISIBILITY
+
+
+def promotion_ideas_allowed(user: User) -> bool:
+    return effective_plan(user) in PLANS_WITH_PROMOTION_IDEAS

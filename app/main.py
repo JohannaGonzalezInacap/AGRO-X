@@ -18,6 +18,7 @@ from app.modules.auth.router import router as auth_router
 from app.modules.billing.router import router as billing_router
 from app.modules.farms.router import router as farms_router
 from app.modules.marketplace.router import router as marketplace_router
+from app.modules.promotions.router import router as promotions_router
 from app.modules.rotation.router import router as rotation_router
 
 settings = get_settings()
@@ -54,6 +55,7 @@ app.include_router(rotation_router)
 app.include_router(alerts_router)
 app.include_router(billing_router)
 app.include_router(marketplace_router)
+app.include_router(promotions_router)
 
 
 @app.get("/healthz")

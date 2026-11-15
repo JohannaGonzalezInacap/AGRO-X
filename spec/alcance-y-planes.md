@@ -9,8 +9,8 @@ Estado: Propuesta. Los precios y topes son Ilustrativos hasta que el equipo los 
 - Recomendación de rotación de cultivos (núcleo del reto).
 - Alertas de riesgo climático por parcela.
 - Planes y pago con una pasarela.
-- Listado de comerciantes y publicación de mermas (plan pro).
-- Ideas de venta promocional ante una alerta (plan pro).
+- Listado de comerciantes y publicación de mermas (plan pro) — **en pausa**, ver ND-002.
+- Ideas de venta urgente ante una alerta de riesgo alto (plan básico y pro).
 
 ## Fuera del alcance por ahora
 
@@ -29,16 +29,21 @@ Estado: Propuesta. Los precios y topes son Ilustrativos hasta que el equipo los 
 | Actualización de alertas | Cada 30 días | Diaria | Cada 6 horas |
 | Contenido de la alerta | Tipo, gravedad y título | Más detalle y recomendaciones por parcela | Igual que básico |
 | Alerta de cambio de cultivo (ADR-008) | No | Sí, sin sugerencia de cultivo | Sí, con sugerencia de qué cultivo plantar |
-| Ideas de promoción | No | No | Sí |
-| Listado de comerciantes (lado productor) | No | No | Sí |
-| Publicar mermas (lado productor) | No | No | Sí |
-| Ver contacto de una merma (lado comerciante, ND-001) | No | No | Sí |
+| Ideas de venta urgente (alerta de riesgo alto, ADR-013) | No | Sí | Sí |
+| Listado de comerciantes (lado productor) — **en pausa** | No | No | Sí |
+| Publicar mermas (lado productor) — **en pausa** | No | No | Sí |
+| Ver contacto de una merma (lado comerciante, ND-001) — **en pausa** | No | No | Sí |
 | Precio mensual | 0 | Por definir | Por definir |
 
 **También se resolvió (ND-001):** cualquiera que use la app paga plan si quiere las funciones pro,
 sin importar el rol — esto resuelve a la vez los puntos 2 y 4 de abajo. Un comerciante sin plan pro
 puede ver el listado de mermas (producto, kilos, precio, región, uso, estado) pero no el contacto,
 aunque el productor lo haya publicado; con pro, sí lo ve. Decidido 2026-11-15.
+
+**También se resolvió (ND-002):** el marketplace de comerciantes y mermas (las tres filas marcadas
+"en pausa" arriba) queda en pausa — ya está construido y funcionando (Fase 8), pero no se sigue
+invirtiendo ahí hasta que el equipo decida si de verdad es provechoso. No se retira: sigue
+disponible, solo no es una función confirmada del producto. Decidido 2026-11-15.
 
 ## Decisiones abiertas para el equipo
 
@@ -47,3 +52,5 @@ aunque el productor lo haya publicado; con pro, sí lo ve. Decidido 2026-11-15.
 3. Precios y moneda.
 4. ~~¿Quién puede ver las mermas publicadas: cualquier comerciante o solo los de pago?~~ Resuelto,
    ver ND-001 arriba.
+5. ¿Vale la pena seguir con el marketplace de mermas, o se retira? Ver ND-002 arriba — pausado
+   mientras se decide.

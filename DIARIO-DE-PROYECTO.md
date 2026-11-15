@@ -3,6 +3,44 @@
 
 Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
 
+## 2026-11-15 — Corrección de alcance: ideas de venta urgente (ADR-013) y pausa del marketplace (ND-002)
+
+**Qué pasó**
+Después de cerrar la Fase 8, Joha aclaró que había entendido mal qué quería pausar: no eran las
+"ideas de promoción", sino el marketplace de comerciantes y mermas en sí. Lo que ella sí quiere
+activo es algo más puntual que un motor de marketing general: sugerirle al productor, de forma
+creativa y realista, cómo vender su cosecha **cuando hay un riesgo real e inminente de perderla**
+por el clima (una alerta activa de severidad alta) — no para toda la cosecha, en cualquier momento.
+
+**Decidido (antes de programar, ver ADR-013 y ND-002)**
+- ADR-013: `GET /farms/{id}/promotions/ideas` ya no está en pausa. Solo responde si la parcela
+  tiene una alerta activa de severidad "alta" (si no, 404 `not_found`); requiere plan básico o pro,
+  el mismo umbral que ver el detalle de una alerta. No depende del marketplace de mermas.
+- ND-002 (`DECISIONES.md`, `spec/alcance-y-planes.md`): el marketplace de comerciantes y mermas de
+  la Fase 8 queda **en pausa** — sigue construido y funcionando, pero no se invierte más ahí hasta
+  que el equipo decida si de verdad es provechoso. `spec/bdd/marketplace.feature` se marcó
+  `@en-pausa` en todos sus escenarios (sigue pasando, no se tocó el código).
+
+**Hecho**
+- `app/modules/promotions/`: `schemas.py` (`PromotionIdeaResponse`), `service.py`
+  (`get_promotion_ideas`, sin tabla nueva: lee `Alert` y `CropHistory` que ya existían) y
+  `router.py`. Registrado en `app/main.py`.
+- `app/core/plans.py`: `PLANS_WITH_PROMOTION_IDEAS = {basic, pro}` y `promotion_ideas_allowed`.
+- `spec/bdd/promociones.feature` nuevo (reemplaza el escenario `@en-pausa` que estaba en
+  `alertas.feature`).
+- 4 pruebas nuevas en `tests/modules/promotions/`. (Antes 82, ahora 86 en total.) `pytest` y
+  `ruff check .` en verde.
+
+**Verificado en local (no solo en pruebas)**
+- Se reinició el servidor que ven los jueces. Con plan free: 403 `plan_required` sin tener que
+  esperar una alerta. Con plan básico y sin alerta de severidad alta activa: 404 `not_found`. Con
+  una alerta de severidad alta activa: 200 con las ideas de venta para esa alerta. Se borraron los
+  datos de la cuenta usada para esta prueba de la base real al terminar.
+
+**Pendiente**
+- El equipo sigue sin decidir si el marketplace de mermas se retoma o se retira (ND-002).
+- Lo que ya quedó anotado en las entradas anteriores.
+
 ## 2026-11-15 — Fase 8: Comerciantes y mermas (cerrada; ideas de promoción en pausa)
 
 **Decidido (ND-001, antes de programar)**

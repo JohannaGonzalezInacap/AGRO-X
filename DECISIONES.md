@@ -6,3 +6,4 @@ decisiones estructurales van como ADR en `spec/adr/`. Los IDs no se reutilizan n
 | ID | Resumen | Documento |
 |---|---|---|
 | ND-001 | El comerciante también paga plan si quiere funciones pro (ver contacto en una merma) | `spec/alcance-y-planes.md` |
+| ND-002 | El marketplace de comerciantes y mermas (Fase 8) queda en pausa: construido y funcionando, pero no se invierte más ahí hasta decidir si es provechoso | `spec/alcance-y-planes.md` |

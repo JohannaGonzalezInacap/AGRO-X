@@ -5,13 +5,18 @@ Lo más nuevo arriba. Una entrada por fase cerrada o por despliegue.
 ## [Sin publicar]
 
 ### Agregado
+- 2026-11-15: Ideas de venta urgente (ADR-013): `GET /farms/{id}/promotions/ideas`. Deja de estar
+  en pausa, con el alcance que faltaba definir: solo responde si la parcela tiene una alerta activa
+  de severidad alta (riesgo real e inminente de perder la cosecha), con sugerencias ilustrativas de
+  venta armadas según el tipo de alerta y el cultivo vigente. Requiere plan básico o pro. No
+  depende del marketplace de mermas.
 - 2026-11-15: Fase 8 — Comerciantes y mermas: `PUT /marketplace/merchant-profile`,
   `GET /marketplace/merchants`, `POST /marketplace/surplus`, `GET /marketplace/surplus`,
   `PATCH /marketplace/surplus/{id}`. Listar comerciantes y publicar mermas (lado productor) y ver
   el contacto de una merma (lado comerciante, ND-001) quedan limitados a plan pro. El contacto de
   una merma solo se muestra si el productor lo publicó y el comerciante que consulta es pro.
-  `spec/bdd/marketplace.feature` nuevo. Quedan **en pausa** las "ideas de promoción" (decisión
-  explícita de Joha: falta definir el alcance).
+  `spec/bdd/marketplace.feature` nuevo. (Corrección 2026-11-15, ND-002: este marketplace quedó en
+  pausa después; las "ideas de promoción" sí se construyeron, ver entrada de arriba.)
 - 2026-11-15: Fase 7 — Planes y pagos: `GET /billing/plans`, `POST /billing/checkout`,
   `GET /billing/subscription`, `POST /billing/webhooks/{provider}`. Pasarela simulada (`fake`)
   para desarrollo y pruebas, y adaptador real de Mercado Pago en modo de pruebas (firma y

@@ -30,13 +30,8 @@ Característica: Alertas de riesgo climático por parcela
     Cuando intento recalcular de nuevo
     Entonces recibo 429 con código "too_soon" y la fecha en que podré hacerlo
 
-  # En pausa (decisión de Joha, 2026-11-15): "ideas de promoción" no se construye todavía porque
-  # no está claro qué debe hacer. No es que falte programarlo, es que falta decidir el alcance.
-  @en-pausa
-  Escenario: Plan vencido se comporta como free
-    Dado que mi plan pro venció ayer
-    Cuando pido las ideas de promoción
-    Entonces recibo 403 con código "plan_required"
+  # "Ideas de promoción" ya no está en pausa: se definió su alcance (ADR-013) y sus escenarios
+  # viven en spec/bdd/promociones.feature, no aquí.
 
   Escenario: Falla la fuente externa
     Dado que la fuente de datos no responde
