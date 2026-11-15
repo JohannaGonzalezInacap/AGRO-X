@@ -35,6 +35,11 @@ class Farm(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_utcnow
     )
+    # Última vez que se recalcularon sus alertas (Fase 6). Controla el límite de intentos por
+    # plan (ADR-006) y a qué parcelas les toca recalcular en el job programado.
+    alerts_refreshed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     crop_history: Mapped[list["CropHistory"]] = relationship(
         back_populates="farm", cascade="all, delete-orphan"

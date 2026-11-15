@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -9,13 +12,23 @@ from app.core.middleware import (
     RequestIdMiddleware,
     SecurityHeadersMiddleware,
 )
+from app.jobs.alerts_job import start_alerts_scheduler, stop_alerts_scheduler
+from app.modules.alerts.router import router as alerts_router
 from app.modules.auth.router import router as auth_router
 from app.modules.farms.router import router as farms_router
 from app.modules.rotation.router import router as rotation_router
 
 settings = get_settings()
 
-app = FastAPI(title="AGRO-X API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    start_alerts_scheduler()
+    yield
+    stop_alerts_scheduler()
+
+
+app = FastAPI(title="AGRO-X API", lifespan=lifespan)
 
 # El orden importa: Starlette ejecuta el último middleware agregado primero. Queremos que
 # RequestIdMiddleware corra antes que todo lo demás, para que cualquier error (incluido
@@ -36,6 +49,7 @@ register_error_handlers(app)
 app.include_router(auth_router)
 app.include_router(farms_router)
 app.include_router(rotation_router)
+app.include_router(alerts_router)
 
 
 @app.get("/healthz")

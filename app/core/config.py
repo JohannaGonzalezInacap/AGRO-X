@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     external_api_cache_ttl_seconds: int = 3600
     coordinate_rounding_decimals: int = 2
 
+    # Job programado de recálculo de alertas (Fase 6). Revisa cada N minutos qué parcelas ya
+    # pueden recalcular según la frecuencia de su plan (app/core/plans.py).
+    alerts_job_interval_minutes: int = 60
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from app.core.time import as_aware_utc
 from app.modules.auth.models import User
@@ -16,6 +16,22 @@ MAX_FARMS_BY_PLAN = {
     PRO: 20,
 }
 
+# Frecuencia de recálculo de alertas (Fase 6, spec/alcance-y-planes.md).
+ALERT_REFRESH_INTERVAL = {
+    FREE: timedelta(days=30),
+    BASIC: timedelta(days=1),
+    PRO: timedelta(hours=6),
+}
+
+# Contenido de la alerta (Fase 6, spec/alcance-y-planes.md): free solo ve el resumen; básico y
+# pro ven detalle y recomendaciones ("Igual que básico").
+PLANS_WITH_ALERT_DETAIL = {BASIC, PRO}
+
+# Alerta de cambio de cultivo (ADR-008): free no la recibe; pro además ve la sugerencia de
+# rotación.
+PLANS_WITH_CROP_CHANGE_ALERT = {BASIC, PRO}
+PLANS_WITH_CROP_SUGGESTION = {PRO}
+
 
 def effective_plan(user: User) -> str:
     """Un plan vencido se comporta como free, sin borrar nada (dominio.md regla 3)."""
@@ -30,3 +46,19 @@ def effective_plan(user: User) -> str:
 
 def max_farms_for(user: User) -> int:
     return MAX_FARMS_BY_PLAN[effective_plan(user)]
+
+
+def alert_refresh_interval_for(user: User) -> timedelta:
+    return ALERT_REFRESH_INTERVAL[effective_plan(user)]
+
+
+def alert_detail_allowed(user: User) -> bool:
+    return effective_plan(user) in PLANS_WITH_ALERT_DETAIL
+
+
+def crop_change_alert_allowed(user: User) -> bool:
+    return effective_plan(user) in PLANS_WITH_CROP_CHANGE_ALERT
+
+
+def crop_suggestion_allowed(user: User) -> bool:
+    return effective_plan(user) in PLANS_WITH_CROP_SUGGESTION

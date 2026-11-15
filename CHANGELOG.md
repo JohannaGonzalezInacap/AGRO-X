@@ -5,6 +5,13 @@ Lo más nuevo arriba. Una entrada por fase cerrada o por despliegue.
 ## [Sin publicar]
 
 ### Agregado
+- 2026-11-15: Fase 6 — Alertas y control por plan: `POST /farms/{id}/alerts/refresh`,
+  `GET /farms/{id}/alerts`. Motor de riesgo (helada, calor extremo, sequía, lluvia intensa) con
+  umbrales ilustrativos (ADR-011; no hay fuente agronómica gratuita disponible, se investigó).
+  Alerta de cambio de cultivo (ADR-008) integrada con el motor de rotación (Fase 5). Detalle y
+  recomendaciones ocultos en plan free; límite de recálculo por plan (429 `too_soon`); si falla una
+  fuente externa, las alertas anteriores siguen disponibles (502, sin perder nada). Job programado
+  (`APScheduler`) que recalcula sola cada parcela según le toque por su plan.
 - 2026-11-14: Fase 5 — Rotación de cultivos (núcleo del reto): `GET /crops` (catálogo) y
   `POST /farms/{id}/rotation/recommendations`. Motor de puntaje con 3 reglas probadas en
   `spec/bdd/rotacion.feature` (reposición de nitrógeno, evitar repetir familia, baja demanda de

@@ -1,6 +1,58 @@
+
 # Diario de proyecto
 
 Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
+
+## 2026-11-15 — Fase 6: Alertas y control por plan (cerrada)
+
+**Hecho**
+- `app/modules/alerts/`: modelo `Alert` (no se borra al dejar de aplicar, queda `active=False`,
+  mismo criterio que el historial de cultivos), motor de riesgo y router con las 2 rutas del
+  contrato.
+- Motor de riesgo con 4 tipos (dominio.md regla 8): helada y calor extremo usan el pronóstico y la
+  tolerancia del cultivo vigente (catálogo de la Fase 5); sequía usa humedad de suelo observada
+  (NASA POWER) más lluvia pronosticada; lluvia intensa usa solo pronóstico.
+- Alerta de cambio de cultivo (ADR-008): se dispara cuando el cultivo vigente llega a "cosecha".
+  Free no la recibe; básico la recibe sin sugerencia; pro la recibe con la primera sugerencia del
+  motor de rotación (Fase 5) y sus razones, o sin sugerencia si el motor no tiene con qué
+  recomendar.
+- Control por plan (`app/core/plans.py`, ampliado): frecuencia de recálculo (free 30 días, básico
+  diario, pro cada 6 horas), detalle y recomendaciones ocultos en free. Recalcular antes de tiempo
+  da 429 `too_soon` con la fecha en que se puede de nuevo.
+- Si falla una fuente externa durante el recálculo, se responde 502 y **no se toca nada** de lo ya
+  guardado — las alertas anteriores siguen disponibles, tal como pide `alertas.feature`.
+- Job programado (`app/jobs/alerts_job.py`, `APScheduler`, corre dentro del mismo proceso):
+  revisa cada hora qué parcelas ya pueden recalcularse según su plan. Si una parcela falla (fuente
+  externa caída), se registra y se sigue con las demás, no se detiene el job completo.
+- Migración nueva (`alerts`, más `alerts_refreshed_at` en `farms`).
+- 11 pruebas nuevas en `tests/modules/alerts/`, cubren los 11 escenarios implementables de
+  `alertas.feature`. (Antes 52, ahora 63 en total.) `pytest` y `ruff check .` en verde.
+
+**Investigado antes de programar (pregunta de Joha)**
+- Se buscó si alguna fuente gratuita (NASA u otra) da umbrales agronómicos de riesgo por cultivo.
+  No se encontró ninguna usable hoy: FAO Ecocrop está retirada (sin API en vivo desde ~2015) y
+  Meteoblue Crop Risk API está en Beta sin capa gratuita confirmada. NASA POWER da los datos
+  observados, no los umbrales de riesgo — son dos cosas distintas. Decisión explícita de Joha:
+  seguir con **datos dummy/ilustrativos** (ADR-011) para que el MVP quede funcional, y conectar una
+  fuente real más adelante si el proyecto avanza.
+- Único umbral no inventado: la helada meteorológica general (mínima ≤ 0 °C), una convención real.
+  El ajuste según la tolerancia del cultivo sí es ilustrativo.
+
+**Diferido**
+- El escenario de `alertas.feature` sobre plan vencido e ideas de promoción depende de
+  `GET /farms/{id}/promotions/ideas` (Fase 8); se marcó `@diferido-fase-8`.
+
+**Verificado en local (no solo en pruebas)**
+- Se reinició el servidor que ya tenían los jueces probando (mismo puerto, mismo túnel de ngrok —
+  no cambió el link) para traer el código de la Fase 6. Con una parcela real: `refresh` llamó a
+  NASA POWER y Open-Meteo reales sin error; salió sin alertas porque el clima actual de Santiago no
+  dispara ninguna condición (correcto, no es un error); el segundo `refresh` inmediato dio 429
+  `too_soon` como corresponde al plan free. El job programado arrancó sin errores en el log.
+
+**Pendiente**
+- Lo que ya quedó anotado en las entradas anteriores. Se amplía el pendiente de "fuente
+  agronómica" para que incluya también los umbrales del motor de riesgo (antes solo cubría el
+  catálogo de cultivos).
 
 ## 2026-11-15 — Segundo cambio de nombre y primer MVP público
 

@@ -30,6 +30,8 @@ Característica: Alertas de riesgo climático por parcela
     Cuando intento recalcular de nuevo
     Entonces recibo 429 con código "too_soon" y la fecha en que podré hacerlo
 
+  # Diferido a la Fase 8: depende de GET /farms/{id}/promotions/ideas, que no existe todavía.
+  @diferido-fase-8
   Escenario: Plan vencido se comporta como free
     Dado que mi plan pro venció ayer
     Cuando pido las ideas de promoción
