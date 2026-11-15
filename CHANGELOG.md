@@ -4,6 +4,11 @@ Lo más nuevo arriba. Una entrada por fase cerrada o por despliegue.
 
 ## [Sin publicar]
 
+### Cambiado
+- 2026-11-15: `CORS_ORIGINS` en Render pasa de apuntar al propio backend (sin uso real) a
+  `https://agro-x-frontend.onrender.com` — el frontend ya está publicado, repositorio
+  `AGRO-X-frontend`.
+
 ### Corregido
 - 2026-11-15: La comparación de rotación ahora incluye "quedarse" con el cultivo vigente
   (`is_current` en `RecommendationItem`), como pide el enunciado del reto ("comparar al menos

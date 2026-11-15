@@ -1,7 +1,20 @@
 # Guion de demo — AGRO-X
 
-Pensado para una demo corta (5-8 minutos) con `curl`/Swagger. Hay **dos servidores en pie**, con
-las **mismas dos cuentas de prueba** ya cargadas en ambos — no hace falta registrar nada nuevo.
+## El link para el jurado
+
+**https://agro-x-frontend.onrender.com** — ahí se abre la app de verdad (no Swagger ni `curl`),
+conectada al backend real. Funciona en el celular: se puede "agregar a pantalla de inicio" desde
+el navegador (Android: menú ⋮; iPhone: botón compartir). No es una instalación de tienda de apps,
+es la misma página web con ícono propio — ver `frontend/README.md` para el detalle.
+
+Entra con la cuenta **`juez-pro@example.com`** / **`JuecesAgroX2026`** (ver tabla de cuentas más
+abajo) — ya tiene parcela y cultivo cargados, no hace falta registrar nada.
+
+El resto de este documento es para probar la API directamente (`curl`/Swagger), pensado para
+cuando quieras mostrar el backend en sí, no la app.
+
+Hay **dos servidores de backend en pie**, con las **mismas dos cuentas de prueba** ya cargadas en
+ambos — no hace falta registrar nada nuevo.
 
 | Servidor | Base `<base>` | Para qué sirve | Limitación conocida |
 |---|---|---|---|

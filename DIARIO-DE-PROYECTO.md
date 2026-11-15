@@ -3,6 +3,39 @@
 
 Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
 
+## 2026-11-15 — Frontend conectado y publicado (repo propio)
+
+**Qué pasó**
+Se construyó `frontend/index.html` sobre el boceto visual de Joha (`BocetoAgroX2.html`): login
+real, parcelas, alertas, ideas de venta urgente, rotación (con la estrategia actual incluida),
+planes y privacidad, todo contra la API real. Se organizó como repositorio propio
+(`AGRO-X-frontend`, separado de este) y se publicó en Render como sitio estático:
+`https://agro-x-frontend.onrender.com`.
+
+**Decidido**
+- Backend y frontend quedan como repositorios y servicios de Render separados — ciclos de cambio
+  independientes.
+- `CORS_ORIGINS` del backend en Render pasó de apuntar a sí mismo (un valor sin uso real, sobrante
+  de antes de que existiera el frontend) a `https://agro-x-frontend.onrender.com` — tanto en el
+  servicio real como en `render.yaml`, para que no se pierda en el próximo despliegue.
+- Se agregó `manifest.json`, `sw.js` (mínimo, sin caché) e íconos para que el frontend se pueda
+  "agregar a pantalla de inicio" en el celular — no es una instalación de tienda de apps.
+- El frontend por defecto apunta al backend de Render (estable); se puede cambiar al servidor
+  local+ngrok desde la propia app para la demo completa de alertas.
+
+**Un bug encontrado y corregido en el camino:** ngrok le muestra a los navegadores reales (no a
+`curl`) una página de advertencia que bloqueaba las llamadas por CORS. Se resolvió agregando el
+header `ngrok-skip-browser-warning` en cada solicitud del frontend.
+
+**Verificado en vivo:** login, parcelas, alertas, ideas de venta urgente, rotación (con `maíz`
+marcado como cultivo actual) y cuenta (plan real, exportar datos), probados en el navegador contra
+`https://agro-x-frontend.onrender.com` ya publicado — no solo en local.
+
+**Pendiente**
+- Ver si el frontend necesita algo más de pulido visual antes de la entrega (es funcional, no
+  necesariamente definitivo en diseño).
+- Lo que ya quedó anotado en entradas anteriores (ND-002, límite de Open-Meteo en Render).
+
 ## 2026-11-15 — Cuentas de prueba para los jueces, en Render y en local
 
 **Qué pasó**

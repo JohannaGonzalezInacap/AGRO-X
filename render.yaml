@@ -33,7 +33,8 @@ services:
       - key: PAYMENT_PROVIDER
         value: fake
       - key: CORS_ORIGINS
-        value: https://agro-x-api.onrender.com
+        # https://agro-x-frontend.onrender.com: el frontend publicado (repo AGRO-X-frontend).
+        value: https://agro-x-frontend.onrender.com
       - key: ALLOWED_HOSTS
         value: agro-x-api.onrender.com
       - key: PUBLIC_BASE_URL
