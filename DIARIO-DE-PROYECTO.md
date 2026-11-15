@@ -1,0 +1,301 @@
+# Diario de proyecto
+
+Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
+
+## 2026-11-15 — Segundo cambio de nombre y primer MVP público
+
+**Decidido**
+- El nombre definitivo del proyecto pasa a ser **AGRO-X** (antes "Agro-Xpace"). Se actualizó en
+  `CLAUDE.md`, el título de la API (`app/main.py`) y `README.md`. Las carpetas del repositorio
+  (`agro-xpace-kit/agro-xpace-api`) **no se renombraron** por la urgencia de la entrega — queda
+  pendiente si se quiere más adelante, sin afectar en nada cómo lo descarga alguien desde GitHub.
+
+**Hecho**
+- Se reescribió `README.md`: ya no describe un "kit de arranque sin código", sino el estado real
+  del proyecto (Fases 1 a 5 construidas) con instrucciones para clonar, instalar, migrar, correr y
+  probar la API.
+- Primer repositorio público en GitHub, para entregar con urgencia a la plataforma de la
+  hackathon. Pensado para poder clonarse y correr en local (mismo patrón que "medreminder").
+
+**Pendiente**
+- Fases 6 a 10 de `RUTA.md` (alertas con control por plan, pagos, comerciantes/mermas, privacidad,
+  despliegue). Se retoman después de esta entrega urgente.
+- Todo lo que ya quedó anotado en entradas anteriores (fuente agronómica, catálogo de etapas,
+  aprobaciones del equipo, plan de pago de Open-Meteo).
+
+## 2026-11-14 — Fase 5: Recomendación de rotación de cultivos (cerrada)
+
+**Hecho**
+- `app/modules/rotation/`: catálogo (`Crop`), motor de puntaje (`service.py`) y router con
+  `GET /crops` y `POST /farms/{id}/rotation/recommendations`.
+- Reglas implementadas (las que sí prueba `rotacion.feature`): después de un cultivo que consume
+  nitrógeno, las leguminosas (que lo fijan) puntúan más alto; repetir la familia de los dos
+  últimos cultivos del historial penaliza; sin riego, con poca precipitación reciente y agua como
+  prioridad más alta, los cultivos de alta demanda de agua bajan de puntaje. Toda recomendación
+  trae al menos una razón y la lista de fuentes usadas.
+- Migración con siembra de 8 cultivos (maíz, trigo, papa, tomate, lechuga, poroto, arveja,
+  alfalfa) — ninguno con fuente agronómica todavía, así que `GET /crops` los marca a todos
+  `illustrative: true` (pendiente desde la Fase 0).
+- ADR-010 (nuevo): el umbral de "baja precipitación" que el `.feature` no fijaba (14 días, promedio
+  menor a 2 mm/día de NASA POWER).
+- 8 pruebas nuevas en `tests/modules/rotation/`, cubren los 6 escenarios del `.feature` con el
+  clima simulado (sin red). (Antes 44, ahora 52 en total.) `pytest` y `ruff check .` en verde.
+
+**Decidido (según lo que avisé en el plan, sin objeción)**
+- Las prioridades "suelo" e "ingreso" se aceptan en la API pero todavía no afectan el puntaje —
+  no hay regla de negocio definida para la primera, ni fuente de datos para la segunda (precios de
+  mercado está fuera de alcance, `fuentes-datos.md`). La respuesta lo avisa en `notices` en vez de
+  inventar una fórmula.
+- El cultivo vigente de la parcela no se recomienda a sí mismo.
+- Si falla la consulta al clima (502 de NASA POWER), la recomendación sigue devolviéndose sin ese
+  dato, con un aviso — no se bloquea toda la respuesta por eso.
+
+**Verificado en local (no solo en pruebas)**
+- `uvicorn` + llamada real a NASA POWER (no simulada): tras registrar "maiz" como cultivo vigente,
+  "poroto" y "arveja" (leguminosas) puntuaron más alto por la reposición de nitrógeno, y "papa",
+  "tomate" y "lechuga" (alta demanda de agua) bajaron de puntaje porque la precipitación real
+  reciente en Santiago resultó baja — confirma que el motor usa datos de clima reales, no solo los
+  simulados de las pruebas.
+- Se encontró que `curl | python -m json.tool` mostraba las tildes corruptas en esta máquina; se
+  verificó con `httpx` directo que la respuesta del servidor tiene los bytes UTF-8 correctos — era
+  un artefacto de esa combinación de herramientas en la terminal, no un bug de la API.
+
+**Pendiente**
+- Lo que ya quedó anotado en las entradas anteriores (fuente agronómica para el catálogo, catálogo
+  de etapas, aprobaciones del equipo, alerta de cambio de cultivo de ADR-008, plan de pago de
+  Open-Meteo).
+
+## 2026-11-14 — Fase 4: Fuentes de datos (cerrada)
+
+**Hecho**
+- `app/integrations/nasa_power.py`: observaciones diarias (temperatura máx/mín, precipitación,
+  humedad de suelo en zona de raíces). `app/integrations/forecast.py`: pronóstico diario de
+  Open-Meteo (máx/mín, lluvia), tope de 16 días.
+- `app/core/cache.py`: caché en memoria con vencimiento, reusable (mismo patrón que
+  `rate_limit.py`). Evita repetir la misma consulta externa dentro de la ventana configurada.
+- ADR-009 (nuevo): redondeo de coordenadas a 2 decimales y valor de relleno de NASA POWER (-999),
+  ninguno de los dos estaba fijado en `spec/`.
+- `httpx` pasó de dependencia de pruebas a dependencia de producción (ahora lo usan los clientes
+  reales).
+- 10 pruebas nuevas en `tests/integrations/`, todas con respuestas simuladas
+  (`httpx.MockTransport`) — ninguna depende de internet. (Antes 34, ahora 44 en total.) `pytest` y
+  `ruff check .` en verde.
+
+**Verificado con una llamada real (no solo con las simuladas)**
+- NASA POWER para Santiago (7 al 13 de noviembre de 2026): los dos días más recientes (12 y 13)
+  volvieron sin dato, exactamente como avisa `spec/contratos/fuentes-datos.md` ("los días más
+  recientes pueden venir sin dato") — y nuestro manejo del valor de relleno lo capturó bien.
+- Open-Meteo para los próximos 4 días: respondió con datos completos.
+- Se actualizó la fila de Open-Meteo en `spec/gobierno/proveedores.md` con la fecha de la
+  verificación.
+
+**Encontrado, no bloqueante (pero corregido)**
+- `FORECAST_BASE_URL` en el `.env` real estaba vacío (plantilla de la Fase 1 sin completar, igual
+  que pasó con `JWT_SECRET` en la Fase 2). Una variable vacía en `.env` pisa el valor por defecto
+  de `Settings` — no es "ausente" para pydantic-settings. Se corrigió esa línea sin leer el resto
+  del archivo, y además se fijó en `tests/conftest.py` (junto a `NASA_POWER_BASE_URL`) para que las
+  pruebas no vuelvan a depender de que el `.env` local esté bien completado.
+
+**Pendiente**
+- Lo que ya quedó anotado en las entradas anteriores. Sigue sin resolverse (no le corresponde al
+  agente): confirmar el plan de pago de Open-Meteo antes de cobrar a usuarios reales
+  (`[COMPLETAR: ...]` en ADR-005 y en `proveedores.md`), y la atribución CC BY 4.0 — se resuelve
+  cuando exista una ruta pública que muestre estos datos.
+
+## 2026-11-14 — Fase 3: Parcelas e historial de cultivos (cerrada)
+
+**Hecho**
+- `app/core/plans.py`: tabla de topes por plan (fuente: `spec/alcance-y-planes.md`) y
+  `effective_plan()` (un plan vencido se comporta como free, dominio.md regla 3). Se reutilizará en
+  las Fases 6 y 7 para frecuencia de alertas y control de rutas.
+- `app/core/time.py`: se sacó de `auth/service.py` el ajuste de zona horaria para SQLite (quedaba
+  duplicado al necesitarlo también en `plans.py`).
+- `app/modules/farms/`: modelos `Farm` y `CropHistory`, esquemas con `extra="forbid"`, servicio y
+  router con las 6 rutas de `spec/contratos/api-v1.md`.
+- `require_role()` nuevo en `app/modules/auth/service.py`: dependencia reutilizable para exigir un
+  rol específico (aquí, "productor"; un comerciante recibe 403 `forbidden`).
+- Registrar un cultivo nuevo vuelve no vigente al anterior (no lo borra); cambiar solo la etapa no
+  crea un historial nuevo. Borrar una parcela borra su historial (`cascade`).
+- Migración de Alembic nueva (`farms`, `crop_history`).
+- `spec/bdd/farms.feature` nuevo: cubre creación, tope por plan, propiedad, rol, historial de
+  cultivo. Se le movió el escenario de "no ver la parcela de otro" que había quedado diferido en
+  `acceso.feature` desde la Fase 2.
+- 14 pruebas nuevas en `tests/modules/farms/` (antes 20, ahora 34 en total). `pytest` y
+  `ruff check .` en verde.
+
+**Decidido (según lo que avisé en el plan, sin objeción)**
+- Tope de parcelas superado responde `403 plan_required` (se reusa el código existente, no se
+  inventó uno nuevo).
+- El historial de cultivo no guarda una "temporada" como campo separado — `spec/dominio.md` la
+  lista como atributo pero el contrato no define su formato ni la pide como entrada. Cada registro
+  ya queda ubicado en el tiempo por `fecha_plantacion`, y `vigente` distingue la actual de las
+  pasadas. Si el equipo define el formato más adelante, se agrega como ND.
+- El cultivo del historial es texto libre, no una referencia al catálogo de cultivos (ese catálogo
+  es de la Fase 5 y todavía no existe).
+
+**Verificado en local (no solo en pruebas)**
+- `uvicorn` + `curl` reales: registro, creación de parcela, tope de plan free (403 en la segunda),
+  registro de cultivo, avance de etapa, y que un segundo productor no puede ver la parcela del
+  primero (404).
+
+**Pendiente**
+- Lo que ya quedó anotado en las entradas anteriores (Fase 0, catálogo de etapas, fuente
+  agronómica, aprobaciones del equipo, alerta de cambio de cultivo de ADR-008).
+
+## 2026-11-14 — Fase 2: Cuentas y acceso (cerrada)
+
+**Hecho**
+- SQLAlchemy 2 + Alembic: `app/core/db.py` (engine, `Base`, `get_db`), primera migración
+  (`migrations/versions/9f5d054ab8c9_crear_tablas_de_auth.py`) con `users`, `refresh_tokens`,
+  `audit_log`.
+- `app/core/security.py`: hash de contraseña con Argon2id, JWT de acceso (15 min, emisor y
+  audiencia fijos), token de renovación opaco (se guarda solo su hash SHA-256).
+- `app/core/rate_limit.py`: límite de intentos en memoria por IP y por acción (registro/login),
+  ventana deslizante configurable.
+- `app/modules/auth/`: modelos, esquemas (`extra="forbid"`, sin rol "admin" disponible), servicio
+  y router con las 5 rutas de `spec/contratos/api-v1.md` (`register`, `login`, `refresh`, `logout`,
+  `me`).
+- Token de renovación de un solo uso: reutilizar uno ya usado revoca toda la cadena de la sesión
+  (`family_id`), según ADR-002.
+- 20 pruebas nuevas en `tests/modules/auth/` (antes 5, ahora 20 en total). `pytest` y
+  `ruff check .` en verde.
+- ADR-002 pasa a "Aceptada", con una sección "Implementación" que documenta el mecanismo elegido
+  para el límite de intentos.
+- Dependencias nuevas fijadas en `requirements.txt`: `sqlalchemy`, `alembic`, `psycopg[binary]`,
+  `argon2-cffi`, `pyjwt`, `email-validator`.
+- `pyproject.toml` nuevo: configura Ruff para no marcar `Depends()` de FastAPI como error (B008) y
+  excluye `migrations/versions/` del lint (Alembic siempre genera ese estilo).
+
+**Decidido (ADR-008, antes de empezar a programar la Fase 2)**
+- Nueva función pedida por Joha: alerta de cambio de cultivo. Básico la recibe sin sugerencia; pro
+  la recibe con la primera sugerencia del motor de rotación (Fase 5). Free no la recibe. Queda
+  documentada en `spec/alcance-y-planes.md` y `spec/bdd/alertas.feature`; se implementa en las
+  Fases 5 y 6, no en esta.
+
+**Verificado en local (no solo en pruebas)**
+- `uvicorn app.main:app --port 8010` + `curl` reales: registro, login, `/auth/me` con y sin token,
+  renovación, reuso de un token ya usado (revoca la cadena), logout, límite de intentos (bloquea al
+  superar 5 intentos por minuto).
+
+**Encontrado, no bloqueante**
+- Quedó un proceso de `uvicorn` de una sesión anterior escuchando en el puerto 8010 con código
+  viejo; hubo que identificarlo (`netstat`) y cerrarlo antes de probar. Si vuelve a pasar, revisar
+  procesos colgados antes de asumir que el código está mal.
+- `JWT_SECRET` en el `.env` local estaba vacío (quedó como plantilla de la Fase 1). Se generó un
+  valor aleatorio y se escribió directo en esa línea del `.env`, sin leer el resto del archivo
+  (regla de `CLAUDE.md`). Si se despliega a otro entorno, hay que generar uno nuevo ahí también.
+- `Settings.jwt_secret` pasó a ser obligatorio (sin valor por defecto): si falta, la API no arranca,
+  en vez de fallar en silencio con una clave vacía.
+
+**Diferido**
+- El escenario de `acceso.feature` sobre no ver la parcela de otro depende de Parcela (Fase 3); se
+  marcó `@diferido-fase-3` en el `.feature` y se mueve cuando esa fase arranque.
+- Segundo factor de autenticación y almacén compartido para el límite de intentos (ambos ya
+  anotados en ADR-002 como diferidos).
+
+**Pendiente**
+- Lo que ya quedó anotado en las entradas anteriores (Fase 0, catálogo de etapas, fuente
+  agronómica, aprobaciones del equipo).
+
+## 2026-11-14 — Fase 1: Esqueleto del proyecto (cerrada)
+
+**Hecho**
+- Se instaló Python 3.12.10 (solo había 3.11.9) y se creó `.venv` con esa versión, según ADR-001.
+- `app/main.py` con FastAPI: `GET /healthz`, CORS con lista cerrada (`CORS_ORIGINS`),
+  `TrustedHostMiddleware` (`ALLOWED_HOSTS`), middleware de `request_id` por solicitud, cabeceras de
+  seguridad y límite de tamaño de cuerpo (413 a partir de 1 MiB). Formato único de error para 404,
+  422, 413 y errores no previstos (`app/core/errors.py`), según `spec/contratos/api-v1.md`.
+- Nuevo ADR-007 (`spec/adr/`): deja por escrito el límite de 1 MiB y las cabeceras elegidas, porque
+  `spec/nfr.md` no fijaba el valor exacto.
+- `requirements.txt` y `requirements-dev.txt` con versiones fijadas (`fastapi==0.163.0`,
+  `uvicorn[standard]==0.54.0`, `pydantic-settings==2.16.3`; dev: `pytest==9.2.0`, `httpx==0.28.1`,
+  `ruff==0.17.5`).
+- 5 pruebas en `tests/` (healthz, formato de error en 404/422/413, cabeceras de seguridad). `pytest`
+  y `ruff check .` en verde.
+- `.github/workflows/ci.yml`: corre `ruff` y `pytest` en cada push/PR (acciones de GitHub fijadas
+  por SHA, no por tag, para evitar que alguien les cambie el contenido después).
+- Se completó la sección "Comandos" de `CLAUDE.md`.
+
+**Verificado en local (no solo en pruebas)**
+- `uvicorn app.main:app --port 8010` + `curl` reales a `/healthz` (200) y a una ruta inexistente
+  (404 con el formato único de error).
+
+**Encontrado, no bloqueante**
+- El puerto 8000 está bloqueado por Windows en esta máquina (error de permisos del sistema
+  operativo, no de la API). Usar otro puerto (ej. 8010) al correr `uvicorn` en local aquí.
+- `starlette.testclient` avisa que usar `httpx` con él va a quedar obsoleto (sugiere `httpx2`). No
+  afecta nada todavía; se revisa si sigue apareciendo en una fase futura.
+
+**Pendiente**
+- Lo que ya quedó anotado en las entradas anteriores (Fase 0, catálogo de etapas).
+
+## 2026-11-14 — Cultivo por temporada en el historial de parcela
+
+**Decidido**
+- El registro de cuenta (Fase 2) sigue siendo solo correo/nombre/contraseña/rol: no se mezcla con
+  datos de parcela. Localización, tipo de cultivo y hectáreas ya eran datos de **Parcela**;
+  "vida de la planta" y "etapa actual" son nuevos y se agregaron al **Historial de cultivo**
+  (`spec/dominio.md`, reglas 9 a 13):
+  - Cada parcela tiene como máximo un cultivo **vigente** a la vez (el de la temporada actual).
+  - La "vida de la planta" se guarda como fecha de plantación, no como número de años, para que la
+    edad se calcule sola.
+  - Catálogo de etapas (Ilustrativo, falta validar con fuente agronómica): `recien_plantada`,
+    `crecimiento`, `floracion`, `fruto`, `cosecha`.
+  - Las alertas y recomendaciones de rotación siempre usan el cultivo vigente de la parcela.
+- Se actualizó `spec/contratos/api-v1.md`: `POST /farms/{id}/crop-history` registra el cultivo de
+  la temporada (vuelve no vigente al anterior); se agregó `PATCH /farms/{id}/crop-history/current`
+  para avanzar solo la etapa sin crear un historial nuevo.
+- Se amplió la fila de "Datos de suelo y cultivos" en `spec/privacidad/inventario-datos.md`.
+
+**Pendiente**
+- Validar con fuente agronómica el catálogo de etapas (hoy Ilustrativo).
+- Esto se implementa en la Fase 3 (`RUTA.md`), todavía no se programó nada.
+
+## 2026-11-14 — Nombre definitivo
+
+**Decidido**
+- El nombre definitivo del proyecto es **Agro-Xpace** (ya no "AgroAlerta"). Se actualizó en
+  `CLAUDE.md`, `README.md` y este diario. Las carpetas del repositorio se renombraron de
+  `agroalerta-api-kit`/`agroalerta-api` a `agro-xpace-kit`/`agro-xpace-api`.
+
+## 2026-11-14 — Avance de Fase 0
+
+**Hecho**
+- Se verificó con una llamada real que NASA POWER devuelve datos diarios válidos para Santiago
+  (`T2M_MAX`, `T2M_MIN`, `PRECTOTCORR`), sin valores de relleno en el rango probado. Se documentó
+  el resultado en `spec/contratos/fuentes-datos.md`.
+- Se investigó y propuso una fuente de pronóstico (ADR-005): **Open-Meteo**. Cubre Chile, da hasta
+  16 días de pronóstico, es gratis para desarrollo (10 000 llamadas/día, sin clave) y tiene plan de
+  pago para producción comercial. Licencia CC BY 4.0 (exige atribución). Se descartó
+  OpenWeatherMap por ahora (cifras de precio inconsistentes entre fuentes de terceros) y no se
+  encontró API pública de la Dirección Meteorológica de Chile.
+- Se actualizó `spec/gobierno/proveedores.md` con el estado de NASA POWER y la propuesta de
+  Open-Meteo.
+
+**Sigue pendiente de decisión del equipo (no lo resuelve el agente)**
+- Aprobar o corregir ADR-001 a ADR-006 y `alcance-y-planes.md` (hoy en estado "Propuesta").
+- Aprobar la propuesta de fuente de pronóstico (Open-Meteo) en ADR-005.
+- Crear cuenta de pruebas en la pasarela de pago (Mercado Pago, ADR-003).
+- Elegir la nube y crear la cuenta (Google Cloud propuesto, ADR-004).
+- Repartir responsabilidades con nombres reales en `spec/gobierno/objetivos-y-raci.md`.
+- Validar con el área legal lo relativo a la Ley 21.719 (sigue pendiente de la entrada anterior).
+- Conseguir fuente agronómica para el catálogo de cultivos (sigue pendiente de la entrada anterior).
+
+## 2026-11-14 — Estructura inicial
+
+**Hecho**
+- Se definió la idea: API con perfiles (productor, comerciante; transportista después) y planes
+  (free, básico, pro).
+- Se creó la estructura de carpetas y la documentación inicial en `spec/`.
+- Se revisó la alineación con COBIT 2019, ITIL, ISO/IEC 27001, ISO/IEC 27701, PCI DSS y Ley 21.719.
+
+**Decidido (como propuesta, falta confirmar con el equipo)**
+- Stack: Python, FastAPI, PostgreSQL (ADR-001).
+- El módulo de rotación de cultivos es el núcleo, porque es lo que pide el reto.
+- Los datos de la NASA son observación; el pronóstico viene de otra fuente (ADR-005).
+- El pago ocurre en la página de la pasarela; la API nunca ve tarjetas (ADR-003).
+
+**Pendiente**
+- Toda la Fase 0 de `RUTA.md`.
+- Validar con alguien del área legal lo relativo a la Ley 21.719.
+- Conseguir fuente agronómica para el catálogo de cultivos.

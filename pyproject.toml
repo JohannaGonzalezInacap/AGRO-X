@@ -1,0 +1,8 @@
+[tool.ruff]
+# Alembic genera este estilo de código siempre; no tiene sentido pulirlo a mano en cada migración.
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint.flake8-bugbear]
+# fastapi.Depends() en un valor por defecto es el patrón oficial de FastAPI para inyección de
+# dependencias, no un error (B008 lo marca porque no lo reconoce por defecto).
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends"]
