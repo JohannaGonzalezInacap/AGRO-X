@@ -9,6 +9,7 @@ from app.modules.alerts import models as alerts_models  # noqa: F401  (registra 
 from app.modules.auth import models as auth_models  # noqa: F401  (registra sus tablas en Base)
 from app.modules.billing import models as billing_models  # noqa: F401  (registra sus tablas)
 from app.modules.farms import models as farms_models  # noqa: F401  (registra sus tablas en Base)
+from app.modules.marketplace import models as marketplace_models  # noqa: F401  (registra tablas)
 from app.modules.rotation import models as rotation_models  # noqa: F401  (registra sus tablas)
 
 config = context.config

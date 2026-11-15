@@ -32,6 +32,14 @@ PLANS_WITH_ALERT_DETAIL = {BASIC, PRO}
 PLANS_WITH_CROP_CHANGE_ALERT = {BASIC, PRO}
 PLANS_WITH_CROP_SUGGESTION = {PRO}
 
+# Mercado (Fase 8, spec/alcance-y-planes.md): listar comerciantes y publicar mermas, del lado del
+# productor.
+PLANS_WITH_MARKETPLACE_ACCESS = {PRO}
+
+# ND-001 (spec/alcance-y-planes.md): el comerciante también paga plan para ver el contacto de una
+# merma, aunque el productor la haya publicado con el contacto visible.
+PLANS_WITH_MERCHANT_CONTACT_VISIBILITY = {PRO}
+
 
 def effective_plan(user: User) -> str:
     """Un plan vencido se comporta como free, sin borrar nada (dominio.md regla 3)."""
@@ -62,3 +70,11 @@ def crop_change_alert_allowed(user: User) -> bool:
 
 def crop_suggestion_allowed(user: User) -> bool:
     return effective_plan(user) in PLANS_WITH_CROP_SUGGESTION
+
+
+def marketplace_access_allowed(user: User) -> bool:
+    return effective_plan(user) in PLANS_WITH_MARKETPLACE_ACCESS
+
+
+def merchant_contact_visibility_allowed(user: User) -> bool:
+    return effective_plan(user) in PLANS_WITH_MERCHANT_CONTACT_VISIBILITY

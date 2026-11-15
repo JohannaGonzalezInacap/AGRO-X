@@ -5,6 +5,13 @@ Lo más nuevo arriba. Una entrada por fase cerrada o por despliegue.
 ## [Sin publicar]
 
 ### Agregado
+- 2026-11-15: Fase 8 — Comerciantes y mermas: `PUT /marketplace/merchant-profile`,
+  `GET /marketplace/merchants`, `POST /marketplace/surplus`, `GET /marketplace/surplus`,
+  `PATCH /marketplace/surplus/{id}`. Listar comerciantes y publicar mermas (lado productor) y ver
+  el contacto de una merma (lado comerciante, ND-001) quedan limitados a plan pro. El contacto de
+  una merma solo se muestra si el productor lo publicó y el comerciante que consulta es pro.
+  `spec/bdd/marketplace.feature` nuevo. Quedan **en pausa** las "ideas de promoción" (decisión
+  explícita de Joha: falta definir el alcance).
 - 2026-11-15: Fase 7 — Planes y pagos: `GET /billing/plans`, `POST /billing/checkout`,
   `GET /billing/subscription`, `POST /billing/webhooks/{provider}`. Pasarela simulada (`fake`)
   para desarrollo y pruebas, y adaptador real de Mercado Pago en modo de pruebas (firma y

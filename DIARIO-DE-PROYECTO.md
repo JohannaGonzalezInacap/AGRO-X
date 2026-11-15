@@ -3,6 +3,43 @@
 
 Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
 
+## 2026-11-15 — Fase 8: Comerciantes y mermas (cerrada; ideas de promoción en pausa)
+
+**Decidido (ND-001, antes de programar)**
+- Resuelve dos preguntas que llevaban abiertas desde la Fase 0 en `spec/alcance-y-planes.md`
+  ("¿el comerciante paga plan?" y "¿quién ve las mermas publicadas?"): cualquiera que use la app
+  paga plan si quiere las funciones pro, sin importar el rol. Un comerciante sin pro ve el listado
+  de mermas pero no el contacto, aunque el productor lo haya publicado. Documentado en
+  `spec/alcance-y-planes.md` y en el nuevo índice `DECISIONES.md`.
+- Las "ideas de promoción" (`GET /farms/{id}/promotions/ideas`) quedan **en pausa**, por decisión
+  explícita de Joha: todavía no está claro qué debe hacer esa función. No se construyó nada de
+  `app/modules/promotions/` esta fase. El escenario de `alertas.feature` que dependía de esto
+  sigue marcado como diferido, ahora con la nota de que está en pausa, no solo pendiente de
+  programar.
+
+**Hecho**
+- `app/modules/marketplace/`: `MerchantProfile` y `Surplus`, servicio y router con las 5 rutas del
+  contrato.
+- Listar comerciantes y publicar mermas (lado productor), y ver el contacto de una merma (lado
+  comerciante, ND-001) quedan en `app/core/plans.py` junto con el resto del control por plan.
+- El contacto de una merma solo aparece si se cumplen dos cosas a la vez: el productor la publicó
+  con el contacto visible (dominio.md regla 7) y quien consulta es un comerciante pro (ND-001). El
+  dueño de la merma siempre ve su propio contacto, sin esa restricción.
+- Cambiar el estado de una merma es solo para su dueño (404 si no es tuya, mismo criterio que
+  parcelas).
+- `spec/bdd/marketplace.feature` nuevo (esta fase tampoco tenía uno, igual que la Fase 3).
+- 10 pruebas nuevas en `tests/modules/marketplace/`. (Antes 72, ahora 82 en total.) `pytest` y
+  `ruff check .` en verde.
+
+**Verificado en local (no solo en pruebas)**
+- Se reinició el servidor que ven los jueces (mismo puerto, mismo túnel) para traer el código.
+  Perfil de comerciante creado, listado de mermas vacío, y un productor free recibió 403 al
+  intentar publicar una merma — justo el criterio de "listo cuando" de `RUTA.md`.
+
+**Pendiente**
+- Lo que ya quedó anotado en las entradas anteriores.
+- Nuevo: definir el alcance de "ideas de promoción" antes de poder construirlo.
+
 ## 2026-11-15 — Fase 7: Planes y pagos (cerrada)
 
 **Hecho**
