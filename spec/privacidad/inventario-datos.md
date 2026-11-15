@@ -16,6 +16,7 @@ son una propuesta y deben validarse con el área legal.
 | Historial de pagos | Quien paga | Activar plan, respaldo contable | Obligación legal y servicio | El titular, administrador | Pasarela | Según exigencia tributaria (por confirmar) |
 | Tokens de sesión (hash) | Todo usuario | Mantener la sesión | Ejecución del servicio | Nadie | No | Hasta vencer o revocar |
 | Auditoría (usuario, acción, fecha) | Todo usuario | Seguridad | Interés legítimo | Administrador | No | 12 meses (por confirmar) |
+| Consentimiento de comunicaciones promocionales (otorgado, versión, fecha) | Todo usuario | Saber si puede recibírselas | Consentimiento | El titular, administrador | No | Hasta retirarlo o eliminar la cuenta |
 
 ## Datos que no se recolectan
 

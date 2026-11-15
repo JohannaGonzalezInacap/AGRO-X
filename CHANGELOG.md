@@ -5,6 +5,12 @@ Lo más nuevo arriba. Una entrada por fase cerrada o por despliegue.
 ## [Sin publicar]
 
 ### Agregado
+- 2026-11-15: Fase 9 — Privacidad y observabilidad: `GET /privacy/export` (perfil, parcelas con
+  historial y alertas, perfil de comerciante o mermas propias según el rol, pagos y
+  consentimientos, nunca contraseñas ni tokens), `DELETE /privacy/account` (borra lo propio;
+  anonimiza pagos y auditoría en vez de borrarlos, ADR-014), `GET, PUT /privacy/consents` (solo
+  "comunicaciones promocionales", ND-003 — los otros dos ya los gobierna el marketplace).
+  `payments.user_id` pasa a ser nullable. `spec/bdd/privacidad.feature` nuevo.
 - 2026-11-15: Ideas de venta urgente (ADR-013): `GET /farms/{id}/promotions/ideas`. Deja de estar
   en pausa, con el alcance que faltaba definir: solo responde si la parcela tiene una alerta activa
   de severidad alta (riesgo real e inminente de perder la cosecha), con sugerencias ilustrativas de

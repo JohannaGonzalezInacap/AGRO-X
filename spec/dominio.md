@@ -18,6 +18,7 @@ Estado: Propuesta.
 | Perfil de comerciante | Datos del negocio comprador | nombre, región, productos de interés, contacto |
 | Merma | Producto no apto para venta normal, ofrecido para otro uso | producto, kilos, precio, región, uso (alimento animal), estado |
 | Pago | Intento de compra de un plan | plan, monto, moneda, estado, referencia |
+| Consentimiento | Permiso puntual que el usuario da o retira (ADR-014) | tipo, otorgado (sí/no), versión del texto aceptado, fecha |
 
 ## Reglas
 
@@ -51,4 +52,5 @@ Usuario 1 ── N Parcela 1 ── N Historial de cultivo
 Usuario (comerciante) 1 ── 1 Perfil de comerciante
 Usuario (productor)   1 ── N Merma
 Usuario 1 ── N Pago
+Usuario 1 ── N Consentimiento
 ```

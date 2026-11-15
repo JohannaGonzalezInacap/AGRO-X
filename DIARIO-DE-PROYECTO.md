@@ -3,6 +3,57 @@
 
 Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
 
+## 2026-11-15 — Fase 9: Privacidad y observabilidad (cerrada)
+
+**Decidido (ND-003 y ADR-014, antes de programar)**
+- `GET, PUT /privacy/consents` solo administra "comunicaciones promocionales". Los otros dos
+  consentimientos de `spec/privacidad/derechos-y-consentimiento.md` ("publicar perfil de
+  comerciante", "publicar contacto en una merma") ya los gobierna el propio
+  `app/modules/marketplace/` (existencia del perfil; `Surplus.contact_visible`) — no se duplican
+  en una tabla de consentimientos aparte, para no tener dos lugares que digan si algo está
+  consentido.
+- Al eliminar la cuenta: parcelas, historial de cultivo, alertas, perfil de comerciante, mermas
+  propias y consentimientos se **borran**. Pagos y auditoría se **anonimizan** (se les quita el
+  vínculo con la persona, el registro sigue existiendo) — así lo pide
+  `spec/privacidad/retencion-y-borrado.md`. Para poder anonimizar un pago, `Payment.user_id` pasó a
+  ser nullable (antes era obligatorio).
+- "Registros sin datos personales" ya se cumplía: el único `logger` del proyecto
+  (`app/jobs/alerts_job.py`) no registra nada personal. No hizo falta cambiar nada ahí.
+- "Métricas para los indicadores": por ahora solo se asegura que exportar datos, cambiar un
+  consentimiento y eliminar la cuenta queden en `AuditLog`, para que el indicador "Solicitudes de
+  privacidad en plazo" (`spec/mejora-continua/indicadores.md`) tenga de dónde salir. Un tablero en
+  vivo para el resto de los indicadores es trabajo de infraestructura, no de esta API.
+
+**Hecho**
+- `app/modules/privacy/`: modelo `Consent`, servicio y router con las 4 rutas del contrato
+  (`GET /privacy/export`, `DELETE /privacy/account`, `GET/PUT /privacy/consents`).
+- Migración nueva: tabla `consents` y `payments.user_id` ahora nullable. En SQLite, el cambio a
+  nullable necesitó `batch_alter_table` (el autogenerado con `op.alter_column` directo falla:
+  SQLite no soporta `ALTER COLUMN`).
+- `GET /privacy/export` junta en un solo JSON el perfil, las parcelas con su historial de cultivo
+  y sus alertas, el perfil de comerciante o las mermas propias según el rol, los pagos y los
+  consentimientos — nunca el hash de la contraseña ni el de los tokens.
+- `spec/dominio.md` gana el concepto "Consentimiento"; `spec/privacidad/inventario-datos.md` y
+  `spec/privacidad/derechos-y-consentimiento.md` quedan al día con lo construido.
+- `spec/bdd/privacidad.feature` nuevo. 8 pruebas nuevas en `tests/modules/privacy/`. (Antes 86,
+  ahora 94 en total.) `pytest` y `ruff check .` en verde.
+
+**Verificado en local (no solo en pruebas)**
+- Se aplicó la migración a la base real y se reinició el servidor que ven los jueces. Con una
+  cuenta de verificación: consentimiento no otorgado por defecto, se otorgó y quedó con fecha y
+  versión, la exportación trajo el perfil y la parcela, y al eliminar la cuenta el login
+  siguiente dio 401. Se aprovechó para limpiar de la base real una cuenta y parcela de prueba
+  que había quedado de una verificación manual de una fase anterior (no era de un juez: correo
+  `prod1@example.com`, creada hoy durante este mismo proyecto).
+
+**Pendiente**
+- Quedan en la base real otras 3 cuentas de prueba de fases anteriores
+  (`pagos-real@example.com`, `comerciante-real@example.com`, `productor-real@example.com`) sin
+  tocar — no es parte de esta fase, pero conviene que el equipo decida si se limpian antes de la
+  entrega final.
+- Lo que ya quedó anotado en las entradas anteriores (ND-002: decidir si el marketplace de mermas
+  se retoma o se retira).
+
 ## 2026-11-15 — Corrección de alcance: ideas de venta urgente (ADR-013) y pausa del marketplace (ND-002)
 
 **Qué pasó**

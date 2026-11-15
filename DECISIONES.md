@@ -7,3 +7,4 @@ decisiones estructurales van como ADR en `spec/adr/`. Los IDs no se reutilizan n
 |---|---|---|
 | ND-001 | El comerciante también paga plan si quiere funciones pro (ver contacto en una merma) | `spec/alcance-y-planes.md` |
 | ND-002 | El marketplace de comerciantes y mermas (Fase 8) queda en pausa: construido y funcionando, pero no se invierte más ahí hasta decidir si es provechoso | `spec/alcance-y-planes.md` |
+| ND-003 | `PUT/GET /privacy/consents` solo cubre "comunicaciones promocionales"; los otros dos consentimientos de la tabla original ya los gobierna el propio marketplace (perfil, `contact_visible`) | `spec/privacidad/derechos-y-consentimiento.md` |

@@ -18,7 +18,9 @@ class Payment(Base):
     __tablename__ = "payments"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    # Nullable: al eliminar una cuenta (ADR-014) se anonimiza el pago, no se borra
+    # (spec/privacidad/retencion-y-borrado.md: "se anonimiza el vínculo con la persona").
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     plan: Mapped[str] = mapped_column(String(32), nullable=False)
     amount: Mapped[int] = mapped_column(nullable=False)  # en la unidad mínima de la moneda (CLP)
     currency: Mapped[str] = mapped_column(String(8), nullable=False, default="CLP")

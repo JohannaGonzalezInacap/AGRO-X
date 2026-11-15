@@ -1,25 +1,29 @@
 # Derechos del titular y consentimiento
 
-Estado: Propuesta. Se implementa en la Fase 9. Plazos y detalles legales por validar.
+Estado: Implementado (Fase 9, ADR-014). Plazos y detalles legales por validar.
 
 ## Derechos y cómo se atienden
 
 | Derecho | Cómo se atiende |
 |---|---|
-| Acceso | `GET /v1/privacy/export` entrega todos sus datos |
+| Acceso | `GET /privacy/export` entrega todos sus datos |
 | Rectificación | Edición de perfil, parcelas y perfil de comerciante |
-| Supresión | `DELETE /v1/privacy/account` elimina cuenta y datos asociados |
+| Supresión | `DELETE /privacy/account` elimina cuenta y datos asociados |
 | Portabilidad | La exportación va en formato JSON |
-| Oposición o retiro de consentimiento | `PUT /v1/privacy/consents` |
+| Oposición o retiro de consentimiento | `PUT /privacy/consents` |
 | Reclamos | Canal de contacto publicado (por definir) |
 
 ## Consentimientos
 
-| Consentimiento | Cuándo se pide | Efecto de retirarlo |
-|---|---|---|
-| Publicar perfil de comerciante en el listado | Al crear el perfil | Deja de aparecer |
-| Publicar contacto en una merma | Al publicar la merma | Se oculta el contacto |
-| Recibir comunicaciones promocionales | Opcional, nunca marcado por defecto | No se envían |
+**ND-003 (2026-11-15):** `GET, PUT /privacy/consents` solo administra el tercero de esta tabla.
+Los otros dos ya los gobierna el propio `app/modules/marketplace/` (crear o borrar el perfil;
+marcar `contact_visible` en una merma) — no se duplican en una tabla de consentimientos aparte.
+
+| Consentimiento | Cuándo se pide | Efecto de retirarlo | Dónde vive |
+|---|---|---|---|
+| Publicar perfil de comerciante en el listado | Al crear el perfil | Deja de aparecer | Existencia del `MerchantProfile` |
+| Publicar contacto en una merma | Al publicar la merma | Se oculta el contacto | `Surplus.contact_visible` |
+| Recibir comunicaciones promocionales | Opcional, nunca marcado por defecto | No se envían | `GET, PUT /privacy/consents` |
 
 ## Reglas
 
