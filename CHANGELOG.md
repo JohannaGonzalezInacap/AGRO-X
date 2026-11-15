@@ -4,6 +4,12 @@ Lo más nuevo arriba. Una entrada por fase cerrada o por despliegue.
 
 ## [Sin publicar]
 
+### Corregido
+- 2026-11-15: La comparación de rotación ahora incluye "quedarse" con el cultivo vigente
+  (`is_current` en `RecommendationItem`), como pide el enunciado del reto ("comparar al menos
+  tres estrategias, incluida la actual"). El aviso de cambio de cultivo nunca sugiere quedarse
+  igual, aunque esa opción puntúe más alto en la comparación general.
+
 ### Agregado
 - 2026-11-15: Fase 9 — Privacidad y observabilidad: `GET /privacy/export` (perfil, parcelas con
   historial y alertas, perfil de comerciante o mermas propias según el rol, pagos y

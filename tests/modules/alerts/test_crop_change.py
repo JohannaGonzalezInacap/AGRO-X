@@ -52,6 +52,23 @@ def test_plan_pro_recibe_el_aviso_con_sugerencia(
     assert alerts["crop_change"]["recommendations"]
 
 
+def test_la_sugerencia_nunca_es_el_cultivo_vigente(
+    client: TestClient, seeded_crops, producer_with_farm, set_plan
+) -> None:
+    """El motor de rotación ahora compara también "quedarse" con el cultivo vigente (para cumplir
+    con el reto: "comparar al menos tres estrategias, incluida la actual"), pero esta alerta es
+    justo para avisar que conviene CAMBIAR de cultivo — nunca debe sugerir quedarse igual."""
+    headers = producer_with_farm["headers"]
+    farm_id = producer_with_farm["farm_id"]
+    set_plan("alertas@example.com", "pro")
+    _registrar_cosecha(client, farm_id, headers, crop="maiz")
+
+    response = client.post(f"/farms/{farm_id}/alerts/refresh", headers=headers)
+
+    alerts = {a["type"]: a for a in response.json()}
+    assert alerts["crop_change"]["suggested_crop"] != "maiz"
+
+
 def test_plan_pro_sin_recomendacion_disponible(
     client: TestClient, producer_with_farm, set_plan
 ) -> None:

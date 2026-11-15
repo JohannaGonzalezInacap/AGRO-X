@@ -140,8 +140,10 @@ def _build_crop_change_alert(db: Session, owner: User, farm_id: uuid.UUID) -> di
     if plans.crop_suggestion_allowed(owner):
         try:
             recommendation = recommend_rotation(db, owner, farm_id, RecommendationRequest())
-            if recommendation.items:
-                top = recommendation.items[0]
+            # Este aviso es para cambiar de cultivo (regla 13, dominio.md): nunca sugiere quedarse
+            # con el mismo, aunque esa opción haya puntuado más alto en la comparación general.
+            top = next((item for item in recommendation.items if not item.is_current), None)
+            if top is not None:
                 suggestion_crop = top.crop
                 suggestion_reasons = top.reasons
                 sources.append("motor_de_rotacion")

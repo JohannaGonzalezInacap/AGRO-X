@@ -39,6 +39,9 @@ class RecommendationItem(BaseModel):
     score: int
     reasons: list[str]
     illustrative: bool
+    # El reto pide comparar "al menos tres estrategias de rotación, incluida la actual" — esta
+    # marca cuál de los ítems es "quedarse con lo que ya tienes", no una rotación nueva.
+    is_current: bool = False
 
 
 class RecommendationResponse(BaseModel):

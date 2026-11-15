@@ -3,6 +3,39 @@
 
 Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
 
+## 2026-11-15 — Corrección: la rotación compara también "quedarse" con el cultivo actual
+
+**Qué pasó**
+Al revisar el proyecto contra el enunciado del reto de la NASA, apareció una frase textual que el
+motor de rotación no cumplía: "puede comparar al menos tres estrategias de rotación, **incluida
+la actual**". El motor (Fase 5) hacía justo lo contrario a propósito: excluía el cultivo vigente
+de la comparación porque "no tiene sentido rotar hacia lo que ya está plantado" — cierto para
+"rotar", pero no es lo que pide el reto: ahí la "actual" es una estrategia más a comparar, no algo
+a excluir.
+
+**Hecho**
+- `app/modules/rotation/service.py`: nueva función `_current_strategy_item` — evalúa "quedarse"
+  con el cultivo vigente con las mismas reglas que una alternativa (familia repetida, alta demanda
+  de agua con poca disponibilidad), y se agrega a la comparación marcado `is_current: true`.
+- `RecommendationItem` (`schemas.py`) gana el campo `is_current`.
+- `app/modules/alerts/service.py`: el aviso de "cambio de cultivo" (que es justo para avisar que
+  conviene cambiar) ahora elige la primera sugerencia que **no** sea la actual, para no
+  contradecirse a sí mismo sugiriendo quedarse igual.
+- `spec/bdd/rotacion.feature`: dos escenarios nuevos. 3 pruebas nuevas/corregidas (antes 98, ahora
+  100). `pytest` y `ruff check .` en verde.
+
+**Verificado en local (no solo en pruebas)**
+Se reinició el servidor que ven los jueces. Con una parcela con "maiz" vigente, la comparación
+devolvió "maiz" con `is_current: true` y su propia razón ("seguir con este cultivo..."), compitiendo
+en puntaje con las demás alternativas.
+
+**Pendiente**
+- El resto de la revisión contra el brief del reto (datasets de la NASA más allá de NASA POWER,
+  glosario de términos científicos) quedó solo como hallazgo, no como tarea — son de alcance
+  opcional según el propio enunciado, y ya estaban anotados como "Prioridad 2/3, dejar para
+  después" en `spec/contratos/fuentes-datos.md`.
+- Lo que ya quedó anotado en las entradas anteriores.
+
 ## 2026-11-15 — Fase 9: Privacidad y observabilidad (cerrada)
 
 **Decidido (ND-003 y ADR-014, antes de programar)**

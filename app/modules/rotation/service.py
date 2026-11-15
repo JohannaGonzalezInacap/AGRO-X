@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import AppError
 from app.integrations import nasa_power
 from app.modules.auth.models import User
-from app.modules.farms.models import CropHistory
+from app.modules.farms.models import CropHistory, Farm
 from app.modules.farms.service import get_owned_farm_or_404
 from app.modules.rotation.models import Crop
 from app.modules.rotation.schemas import (
@@ -91,6 +91,11 @@ def recommend_rotation(
     last_two_families = {
         crops_by_name[h.crop].family for h in history[:2] if h.crop in crops_by_name
     }
+    # Para evaluar "quedarse" con el cultivo vigente, se mira la familia de las temporadas
+    # ANTERIORES a él (no la suya propia, que siempre "coincidiría consigo misma" y no diría nada).
+    families_before_current = {
+        crops_by_name[h.crop].family for h in history[1:3] if h.crop in crops_by_name
+    }
 
     average_precipitation = None
     try:
@@ -123,7 +128,7 @@ def recommend_rotation(
     items: list[RecommendationItem] = []
     for crop in all_crops:
         if crop.name == current_crop_name:
-            continue  # no tiene sentido "rotar" hacia el cultivo que ya está vigente.
+            continue  # se compara aparte, como "quedarse" (ver current_item más abajo).
 
         score = 100
         reasons: list[str] = []
@@ -160,6 +165,56 @@ def recommend_rotation(
             )
         )
 
+    if current_crop is not None:
+        items.append(
+            _current_strategy_item(
+                current_crop, families_before_current, farm, low_precipitation, top_priority
+            )
+        )
+
     items.sort(key=lambda item: item.score, reverse=True)
 
     return RecommendationResponse(items=items, sources_used=sources_used, notices=notices)
+
+
+def _current_strategy_item(
+    current_crop: Crop,
+    families_before_current: set[str],
+    farm: Farm,
+    low_precipitation: bool,
+    top_priority: PriorityDimension,
+) -> RecommendationItem:
+    """La estrategia de "quedarse" con el cultivo vigente, comparada igual que las alternativas
+    de rotación (el reto pide comparar "al menos tres estrategias... incluida la actual")."""
+    score = 100
+    reasons: list[str] = []
+
+    if current_crop.family in families_before_current:
+        score -= _FAMILY_REPEAT_PENALTY
+        reasons.append(
+            "Seguir con este cultivo repite otra vez la misma familia reciente, lo que favorece"
+            " plagas y enfermedades."
+        )
+
+    if (
+        not farm.has_irrigation
+        and low_precipitation
+        and top_priority == PriorityDimension.WATER
+        and current_crop.water_need == "alto"
+    ):
+        score -= _HIGH_WATER_NEED_PENALTY
+        reasons.append(
+            "Alta demanda de agua; seguir con este cultivo no ayuda con la poca disponibilidad"
+            " (ADR-010)."
+        )
+
+    if not reasons:
+        reasons.append("Es el cultivo vigente de esta parcela: la opción de no rotar todavía.")
+
+    return RecommendationItem(
+        crop=current_crop.name,
+        score=score,
+        reasons=reasons,
+        illustrative=current_crop.source is None,
+        is_current=True,
+    )

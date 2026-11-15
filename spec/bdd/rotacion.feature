@@ -37,3 +37,16 @@ Característica: Recomendación de rotación de cultivos
     Dado que un dato del catálogo no tiene fuente agronómica
     Cuando ese dato influye en una recomendación
     Entonces la respuesta lo marca como ilustrativo
+
+  # El reto de la NASA pide comparar "al menos tres estrategias de rotación, incluida la
+  # actual" — la comparación no está completa si solo se ven las alternativas.
+  Escenario: La comparación incluye quedarse con el cultivo actual
+    Dado que el último cultivo de la parcela fue trigo
+    Cuando pido recomendaciones de rotación
+    Entonces "trigo" aparece en la comparación marcado como la estrategia actual
+    Y trae su propia razón, no la de una rotación nueva
+
+  Escenario: El aviso de cambio de cultivo nunca sugiere quedarse igual
+    Dado que mi cultivo vigente llegó a la etapa "cosecha" y tengo plan pro
+    Cuando se recalculan las alertas de la parcela
+    Entonces la sugerencia de cultivo de la alerta nunca es el cultivo vigente

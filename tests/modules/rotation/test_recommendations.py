@@ -39,11 +39,12 @@ def test_se_evita_repetir_la_misma_familia(
     response = client.post(f"/farms/{farm_id}/rotation/recommendations", json={}, headers=headers)
 
     items = {item["crop"]: item for item in response.json()["items"]}
-    # "trigo" es el vigente, no se recomienda a sí mismo. "maiz" es de la misma familia
-    # (gramineas) que los dos últimos del historial (maiz, trigo) y debe bajar de puntaje.
-    assert "trigo" not in items
+    # "maiz" es de la misma familia (gramineas) que los dos últimos del historial (maiz, trigo)
+    # y debe bajar de puntaje. "trigo" es el vigente: aparece aparte, como la opción de quedarse.
     assert any("plagas" in r or "enfermedades" in r for r in items["maiz"]["reasons"])
     assert items["maiz"]["score"] < items["poroto"]["score"]
+    assert items["trigo"]["is_current"] is True
+    assert items["maiz"]["is_current"] is False
 
 
 def test_con_poca_agua_bajan_los_de_alta_demanda(
@@ -83,6 +84,21 @@ def test_toda_recomendacion_explica_sus_razones_y_sus_fuentes(
     assert "catalogo_cultivos" in body["sources_used"]
     assert "historial_de_parcela" in body["sources_used"]
     assert "nasa_power" in body["sources_used"]
+
+
+def test_la_comparacion_incluye_quedarse_con_el_cultivo_actual(
+    client: TestClient, seeded_crops, producer_with_farm
+) -> None:
+    headers = producer_with_farm["headers"]
+    farm_id = producer_with_farm["farm_id"]
+    _registrar_cultivo(client, farm_id, headers, "trigo")
+
+    response = client.post(f"/farms/{farm_id}/rotation/recommendations", json={}, headers=headers)
+
+    items = {item["crop"]: item for item in response.json()["items"]}
+    assert items["trigo"]["is_current"] is True
+    assert "vigente" in " ".join(items["trigo"]["reasons"])
+    assert all(not item["is_current"] for crop, item in items.items() if crop != "trigo")
 
 
 def test_sin_historial_igual_hay_respuesta(
