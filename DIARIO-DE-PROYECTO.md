@@ -3,6 +3,32 @@
 
 Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
 
+## 2026-11-15 — Cuentas de prueba para los jueces, en Render y en local
+
+**Qué pasó**
+Se crearon dos cuentas de prueba (`juez-pro@example.com`, `juez-free@example.com`, misma
+contraseña en ambas) con una parcela y un cultivo ya cargados, duplicadas en los dos servidores
+que están en pie (Render y local+ngrok), para que los jueces no tengan que registrar nada.
+
+Al probar, se confirmó que `POST /farms/{id}/alerts/refresh` falla en Render (502): NASA POWER
+responde, Open-Meteo no — probablemente el plan gratis de Render limita o bloquea esa IP
+compartida. En local+ngrok ambas fuentes responden bien.
+
+**Decidido**
+- Para la demo de alertas/ideas de venta urgente, usar el servidor local+ngrok, no Render.
+- En esa parcela (local, "El Esperanza") se sembró manualmente una alerta de severidad alta
+  (`illustrative: true`, igual criterio que el resto de datos agronómicos del proyecto) para que
+  la demo no dependa de si el clima real del día dispara algo — documentado en
+  `docs/guion-de-demo.md`, no oculto.
+- `PAYMENT_WEBHOOK_SECRET` del servicio en Render se cambió a un valor conocido (autorizado por
+  Joha) para poder activar el plan Pro de la cuenta demo a través de la pasarela simulada, igual
+  que se haría con un pago real.
+
+**Pendiente**
+- Investigar si el problema de Open-Meteo en Render es permanente (límite de IP) o se puede
+  resolver (otra región, otra fuente de pronóstico) — por ahora no bloquea la entrega porque el
+  servidor local+ngrok cubre esa parte de la demo.
+
 ## 2026-11-15 — Corrección: la rotación compara también "quedarse" con el cultivo actual
 
 **Qué pasó**

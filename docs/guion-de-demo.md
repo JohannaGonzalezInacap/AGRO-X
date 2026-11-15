@@ -1,25 +1,50 @@
 # Guion de demo — AGRO-X
 
-Pensado para una demo corta (5-8 minutos) con `curl`/Swagger contra el servicio desplegado en
-Render (ADR-015). Reemplaza la URL `<base>` por la del servicio real (`agro-x-api.onrender.com` o
-la que Render haya asignado — revisar en `render.yaml` / panel de Render si cambió).
+Pensado para una demo corta (5-8 minutos) con `curl`/Swagger. Hay **dos servidores en pie**, con
+las **mismas dos cuentas de prueba** ya cargadas en ambos — no hace falta registrar nada nuevo.
+
+| Servidor | Base `<base>` | Para qué sirve | Limitación conocida |
+|---|---|---|---|
+| **Render** (real, ADR-015) | `https://agro-x-api.onrender.com` | Mostrar que está desplegado de verdad: cuentas, parcelas, rotación, pagos, privacidad | `POST /farms/{id}/alerts/refresh` falla (502): Open-Meteo no responde desde la red de Render (plan gratis). NASA POWER sí funciona ahí. |
+| **Local + túnel temporal** | la URL de ngrok vigente (pregúntame si no la tienes a mano) | Todo lo anterior **más** alertas climáticas e ideas de venta urgente — ahí sí llegan ambas fuentes de datos | El túnel se cae si se reinicia; si no responde, avísame para levantarlo de nuevo |
+
+## Cuentas de prueba (ya cargadas en los dos servidores)
+
+| Cuenta | Correo | Contraseña | Plan | Parcela ya cargada |
+|---|---|---|---|---|
+| Pro | `juez-pro@example.com` | `JuecesAgroX2026` | Pro (hasta 2026-12-15) | "El Esperanza" (Maule, con riego), maíz en etapa cosecha |
+| Free | `juez-free@example.com` | `JuecesAgroX2026` | Free | "Los Aromos" (Metropolitana, sin riego), trigo en floración |
+
+Usa la cuenta **Pro** para la parte de alertas/ideas de venta (abajo) — ya tiene todo listo. La
+cuenta **Free** sirve para mostrar el contraste (sin detalle de alerta, sin ideas de venta: 403
+`plan_required`).
+
+`GET /farms` con cada cuenta trae el `farm_id` que haga falta, pero por si se necesita a mano (son
+distintos en cada servidor, aunque la parcela se llame igual):
+
+| Parcela | `farm_id` en Render | `farm_id` en local/ngrok |
+|---|---|---|
+| El Esperanza (Pro) | `4afea516-29d8-4fee-b2db-b74a94d2c64f` | `12bb3519-3772-4642-bf78-796921cddc97` |
+| Los Aromos (Free) | `4a0b0b50-938e-4675-8a12-1edd2f774efa` | `fca61cef-4385-4316-8685-2f6ce35a338b` |
+
+(La alerta de severidad alta sembrada para la demo solo existe en **local/ngrok**, sobre "El
+Esperanza" — en Render esa parcela no tiene alertas porque ahí el recálculo falla, ver tabla de
+arriba.)
 
 ## 0. Antes de empezar
 
-- Confirma que el servicio responde: `GET <base>/healthz` → `{"status":"ok"}`.
+- Confirma que el servidor que vas a usar responde: `GET <base>/healthz` → `{"status":"ok"}`.
 - Abre `<base>/docs` en el navegador — sirve de respaldo si algo falla en vivo con `curl`.
-- **El primer request después de un rato de inactividad puede tardar ~30-50 segundos**: el plan
-  gratis de Render apaga el servicio cuando nadie lo usa y lo despierta en la primera llamada
-  ("cold start"). Haz ese primer `GET /healthz` *antes* de empezar a hablar, no durante la demo.
+- En Render, **el primer request después de un rato de inactividad puede tardar ~30-50 segundos**
+  ("cold start" del plan gratis). Haz ese primer `GET /healthz` *antes* de empezar a hablar.
 
 ## 1. Cuenta y parcela (1 min)
 
+Usa la cuenta Pro ya cargada — no hace falta registrar nada:
+
 ```
-POST /auth/register   { "email": "demo@agro-x.cl", "name": "Demo", "password": "demo-hackathon-2026", "role": "producer" }
-POST /auth/login       { "email": "demo@agro-x.cl", "password": "demo-hackathon-2026" }
-POST /farms  (con el access_token)
-  { "name": "Parcela Demo", "region": "Metropolitana", "latitude": -33.45, "longitude": -70.65,
-    "area_hectares": 3.0, "soil_texture": "franco", "has_irrigation": true }
+POST /auth/login   { "email": "juez-pro@example.com", "password": "JuecesAgroX2026" }
+GET  /farms        (con el access_token)  →  trae "El Esperanza" ya creada
 ```
 
 Mensaje clave: "el rol y el plan los decide el servidor, nunca lo que mande el cliente".
@@ -28,27 +53,51 @@ Mensaje clave: "el rol y el plan los decide el servidor, nunca lo que mande el c
 
 ```
 GET /crops
-POST /farms/{farm_id}/crop-history   { "crop": "maiz", "planting_date": "2026-01-10", "stage": "cosecha" }
 POST /farms/{farm_id}/rotation/recommendations   {}
 ```
 
-Mensaje clave: cada cultivo sugerido trae **sus razones** (nunca "porque sí") y qué tan ilustrativo
-es el dato agronómico detrás.
+(`farm_id` es el de "El Esperanza", que ya tiene registrado "maiz" en etapa "cosecha")
 
-## 3. Alertas de riesgo climático (2 min)
+Mensaje clave: cada cultivo sugerido trae **sus razones** (nunca "porque sí"), qué tan ilustrativo
+es el dato agronómico detrás, y la comparación **incluye quedarse con el cultivo actual**
+(`is_current: true`) — tal como pide el enunciado del reto.
+
+## 3. Alertas de riesgo climático e ideas de venta urgente (2 min) — usar el servidor local/ngrok
+
+**Esta sección necesita el servidor local + ngrok**, no Render (ver tabla de arriba).
+
+La parcela "El Esperanza" de la cuenta Pro ya tiene dos alertas activas cargadas — no hace falta
+recalcular nada para la demo (recalcular trae el clima real del día, que puede o no disparar algo):
+
+```
+GET /farms/{farm_id}/alerts
+```
+
+Vas a ver dos: `crop_change` (porque el maíz está en etapa cosecha, con sugerencia de rotación) y
+`frost` con `"severity": "alta"` — esta última se sembró a propósito para la demo (no es el clima
+real de hoy; se nota porque `illustrative: true`, igual que el resto de los datos agronómicos del
+proyecto). Con esa alerta de severidad alta activa, ahora sí responde con contenido:
+
+```
+GET /farms/{farm_id}/promotions/ideas
+```
+
+Mensaje clave: esta función **solo** responde si hay un riesgo real e inminente (severidad alta)
+— por eso se sembró la alerta en vez de dejarlo al azar del clima del día de la demo. Si quieres
+mostrar también el camino "sin riesgo", usa la parcela de la cuenta Free (`GET
+/farms/{farm_id}/promotions/ideas` ahí da 403 `plan_required`, porque Free ni siquiera llega a
+preguntar si hay riesgo).
+
+Si quieres mostrar el recálculo real con el clima del día (opcional, con cualquiera de las dos
+cuentas):
 
 ```
 POST /farms/{farm_id}/alerts/refresh
-GET  /farms/{farm_id}/alerts
 ```
 
 Mensaje clave: combina NASA POWER (observado) y Open-Meteo (pronóstico); el detalle y las
-recomendaciones solo aparecen en plan básico/pro (en free, solo tipo/gravedad/título).
-
-Si el clima real no dispara ninguna alerta ese día (puede pasar, depende del clima real de la
-región elegida): explicar que es esperado — el motor no inventa riesgo que no existe — y mostrar
-`GET /farms/{farm_id}/promotions/ideas` devolviendo 404 `not_found` como prueba de que tampoco
-inventa ideas de venta sin un riesgo real detrás (ADR-013).
+recomendaciones solo aparecen en plan básico/pro (en free, solo tipo/gravedad/título). Si el clima
+real no dispara nada nuevo, no borra lo que ya había — por eso la alerta sembrada sigue ahí.
 
 ## 4. Planes (1 min)
 
@@ -64,9 +113,12 @@ confirma por su cuenta (webhook firmado). Los precios de básico/pro siguen "por
 ## 5. Privacidad (1 min, opcional si el tiempo aprieta)
 
 ```
-GET /privacy/export
-DELETE /privacy/account   (con la cuenta de demo, al final — es irreversible)
+GET /privacy/export   (con la cuenta Pro o Free, para mostrar que funciona)
 ```
+
+**No uses `DELETE /privacy/account` con `juez-pro@example.com` ni `juez-free@example.com`** — son
+las cuentas que van a usar los jueces, borrarla es irreversible. Si quieres mostrar el borrado en
+vivo, regístrate una cuenta nueva y aparte solo para eso.
 
 Mensaje clave: exportar y eliminar la cuenta ya están construidos (Ley 21.719), no solo
 documentados.
