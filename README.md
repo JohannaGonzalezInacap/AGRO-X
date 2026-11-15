@@ -5,10 +5,9 @@ Usa observaciones de la Tierra (NASA POWER) y pronóstico (Open-Meteo) junto con
 para recomendar rotaciones de cultivo que mejoren la salud del suelo y la resiliencia frente al
 clima.
 
-**Estado:** MVP en construcción por fases. Hoy están implementadas las Fases 1 a 5 de `RUTA.md`
-(cuentas, parcelas, fuentes de datos externas y el motor de rotación — el núcleo del reto). Las
-Fases 6 a 10 (alertas con control por plan, pagos, comerciantes y mermas, privacidad, despliegue)
-todavía no están.
+**Estado:** las 10 fases de `RUTA.md` están cerradas. Desplegado en Render (ADR-015); el único
+pendiente real de negocio es el marketplace de mermas, que quedó en pausa (ND-002) hasta que el
+equipo decida si vale la pena seguir invirtiendo ahí.
 
 ## Qué hace hoy
 
@@ -21,6 +20,17 @@ todavía no están.
 - **Rotación de cultivos**: catálogo de cultivos y motor de recomendación que puntúa cada cultivo
   con razones explicadas (reposición de nitrógeno, evitar repetir familia, demanda de agua según
   el clima reciente de la parcela).
+- **Alertas de riesgo climático**: helada, calor extremo, sequía, lluvia intensa y aviso de cambio
+  de cultivo; frecuencia y detalle según el plan; job programado que recalcula sola cada parcela.
+- **Ideas de venta urgente**: sugerencias ante una alerta de riesgo alto (ADR-013).
+- **Planes y pagos**: catálogo de planes, checkout, webhook verificado (pasarela simulada en
+  desarrollo; Mercado Pago real pendiente de cuenta de pruebas).
+- **Comerciantes y mermas**: construido y funcional, pero **en pausa** por decisión de negocio
+  (ND-002) — no se promueve como función confirmada del producto.
+- **Privacidad**: exportar mis datos, eliminar mi cuenta (borra lo propio, anonimiza pagos y
+  auditoría), consentimientos.
+- **Despliegue**: contenedor sin usuario root, Render (web service + Postgres administrado),
+  secretos generados por la plataforma (ADR-015, reemplaza a ADR-004/Google Cloud).
 
 Ver `spec/contratos/api-v1.md` para el contrato completo de rutas, y `DIARIO-DE-PROYECTO.md` para
 la bitácora detallada de qué se construyó en cada fase y qué decisiones se tomaron.
@@ -89,8 +99,11 @@ Ninguna prueba depende de internet: las llamadas a NASA POWER y Open-Meteo está
 | `app/core/` | Configuración, seguridad, autorización, middlewares, errores, caché |
 | `app/modules/<módulo>/` | `router.py` (rutas), `schemas.py` (entrada y salida), `service.py` (reglas), `models.py` |
 | `app/integrations/` | Clientes de datos externos (NASA POWER, Open-Meteo) |
+| `app/jobs/` | Tareas programadas (recálculo de alertas) |
 | `tests/` | Espejo de `app/modules/` más pruebas de integración y de seguridad |
 | `migrations/` | Migraciones de base de datos (Alembic) |
+| `docs/guion-de-demo.md` | Guion paso a paso para mostrar la API en vivo |
+| `render.yaml`, `Dockerfile` | Infraestructura del despliegue (ADR-015) |
 | `DIARIO-DE-PROYECTO.md` | Bitácora fechada: qué se hizo, qué se decidió, qué quedó pendiente |
 | `CHANGELOG.md` | Historial de cambios por fase |
 | `CLAUDE.md` | Reglas que sigue el agente de IA que ha construido este proyecto junto con el equipo |
