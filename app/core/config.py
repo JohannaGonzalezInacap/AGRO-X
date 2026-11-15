@@ -34,6 +34,14 @@ class Settings(BaseSettings):
     # pueden recalcular según la frecuencia de su plan (app/core/plans.py).
     alerts_job_interval_minutes: int = 60
 
+    # Pagos (ADR-003). "fake" en desarrollo y pruebas; "mercadopago" para el adaptador real en
+    # modo de pruebas. La pasarela simulada está prohibida en producción.
+    payment_provider: str = "fake"
+    payment_webhook_secret: str = ""
+    mercadopago_access_token: str = ""
+    mercadopago_api_base_url: str = "https://api.mercadopago.com"
+    public_base_url: str = "http://localhost:8000"
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

@@ -5,6 +5,13 @@ Lo más nuevo arriba. Una entrada por fase cerrada o por despliegue.
 ## [Sin publicar]
 
 ### Agregado
+- 2026-11-15: Fase 7 — Planes y pagos: `GET /billing/plans`, `POST /billing/checkout`,
+  `GET /billing/subscription`, `POST /billing/webhooks/{provider}`. Pasarela simulada (`fake`)
+  para desarrollo y pruebas, y adaptador real de Mercado Pago en modo de pruebas (firma y
+  confirmación verificadas contra su documentación vigente). Webhook con firma, idempotencia y
+  verificación de monto/moneda antes de activar el plan (30 días); desajuste de monto queda en
+  auditoría, no activa nada. Precios de básico/pro siguen como "por definir" en el catálogo
+  público (ADR-012: se usa un precio de desarrollo solo internamente, nunca mostrado como real).
 - 2026-11-15: Fase 6 — Alertas y control por plan: `POST /farms/{id}/alerts/refresh`,
   `GET /farms/{id}/alerts`. Motor de riesgo (helada, calor extremo, sequía, lluvia intensa) con
   umbrales ilustrativos (ADR-011; no hay fuente agronómica gratuita disponible, se investigó).

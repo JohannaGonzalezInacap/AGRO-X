@@ -7,6 +7,7 @@ import os
 os.environ.setdefault("JWT_SECRET", "clave-de-pruebas-no-usar-en-produccion")
 os.environ.setdefault("NASA_POWER_BASE_URL", "https://power.larc.nasa.gov")
 os.environ.setdefault("FORECAST_BASE_URL", "https://api.open-meteo.com")
+os.environ.setdefault("PAYMENT_WEBHOOK_SECRET", "secreto-de-pruebas-no-usar-en-produccion")
 
 import pytest
 from fastapi.testclient import TestClient

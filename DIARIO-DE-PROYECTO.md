@@ -3,6 +3,45 @@
 
 Una entrada por sesión de trabajo o por fase cerrada. Lo más nuevo arriba.
 
+## 2026-11-15 — Fase 7: Planes y pagos (cerrada)
+
+**Hecho**
+- `app/modules/billing/`: catálogo, inicio de pago, suscripción y webhook. Patrón adaptador
+  (ADR-003) con `providers/base.py` (interfaz), `providers/fake.py` (simulada) y
+  `providers/mercadopago.py` (real, modo de pruebas).
+- Antes de programar, investigué el formato vigente de Mercado Pago (lo exige ADR-003): firma
+  `x-signature` (`ts=...,v1=...`, `HMAC-SHA256` sobre `id:{data.id};request-id:{x-request-id};ts:{ts};`)
+  y confirmación en `GET /v1/payments/{id}`. Los nombres de los campos de monto/moneda
+  (`transaction_amount`, `currency_id`) no se confirmaron contra una respuesta real — ya era un
+  pendiente de `spec/seguridad/pagos-pci.md`, no se agrega como nuevo.
+- Webhook: firma inválida → 401; aviso repetido → 200 sin reaplicar nada (idempotencia por
+  `provider` + `external_event_id`); monto distinto al esperado → no activa el plan y queda en
+  auditoría (reusa `AuditLog` de la Fase 2); pago rechazado → plan sin cambios; pago aprobado con
+  monto correcto → plan activo por 30 días.
+- El adaptador real de Mercado Pago puede verificar firma y confirmar un pago, pero **no puede
+  iniciar uno todavía**: falta la cuenta de pruebas (Fase 0) y el precio real de los planes
+  (ADR-012). Queda listo el código para cuando ambos existan.
+- ADR-012 (nuevo): un precio de desarrollo (básico 9.990 CLP, pro 19.990 CLP) para que el flujo de
+  pago se pueda probar de punta a punta, mientras `spec/alcance-y-planes.md` siga sin un precio
+  real. El catálogo público nunca lo muestra como si fuera definitivo (`price: null`).
+- Endpoint de solo desarrollo (`POST /billing/_dev/fake-approve/{referencia}`) para simular a mano
+  el resultado de la pasarela — deshabilitado si `PAYMENT_PROVIDER` no es `fake`.
+- ADR-003 pasa a "Aceptada", con una sección de implementación.
+- 9 pruebas nuevas en `tests/modules/billing/`, cubren los 8 escenarios de `pagos.feature`. (Antes
+  63, ahora 72 en total.) `pytest` y `ruff check .` en verde.
+
+**Verificado en local (no solo en pruebas)**
+- Se reinició el servidor que ven los jueces (mismo puerto, mismo túnel) dos veces: una para
+  completar `PAYMENT_WEBHOOK_SECRET` en el `.env` real (estaba vacío, mismo patrón que
+  `JWT_SECRET` y `FORECAST_BASE_URL` en fases anteriores) y otra para tomar el código. Flujo
+  completo con la pasarela simulada: catálogo, inicio de pago (el plan no cambia), aprobación
+  simulada, webhook con firma válida activa `pro` por 30 días, webhook con firma falsa da 401.
+
+**Pendiente**
+- Lo que ya quedó anotado en las entradas anteriores. Se agrega: crear la cuenta de pruebas real
+  de Mercado Pago y definir el precio real de básico/pro son tareas del equipo, no del agente
+  (ambas bloquean que el adaptador real pueda cobrar de verdad).
+
 ## 2026-11-15 — Fase 6: Alertas y control por plan (cerrada)
 
 **Hecho**

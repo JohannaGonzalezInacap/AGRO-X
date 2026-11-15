@@ -15,6 +15,7 @@ from app.core.middleware import (
 from app.jobs.alerts_job import start_alerts_scheduler, stop_alerts_scheduler
 from app.modules.alerts.router import router as alerts_router
 from app.modules.auth.router import router as auth_router
+from app.modules.billing.router import router as billing_router
 from app.modules.farms.router import router as farms_router
 from app.modules.rotation.router import router as rotation_router
 
@@ -50,6 +51,7 @@ app.include_router(auth_router)
 app.include_router(farms_router)
 app.include_router(rotation_router)
 app.include_router(alerts_router)
+app.include_router(billing_router)
 
 
 @app.get("/healthz")
